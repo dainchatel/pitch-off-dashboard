@@ -11,12 +11,11 @@ A lightweight, instant-play dashboard for managing podcast audio stings and prod
 - **Keyboard Shortcuts**: Press Space to stop playback instantly
 - **Responsive Design**: Works on desktop and mobile browsers
 - **No Installation Required**: Just open `index.html` in your browser
-
-### Coming Soon
-- 🎬 Movie Database Integration: Look up Hollywood actors and their stats
-- 📊 Actor filtering by category (Horror, Action, Comedy, etc.)
-- ⭐ A-list/B-list actor classification
-- 🔗 Integration with The Movie Database (TMDb)
+- **🎬 TMDB Integration**: Access trending actors data from The Movie Database
+  - View list of top trending actors
+  - Generate random high trending actor
+  - Filter trending actors by genre
+  - See actor popularity and known works
 
 ## Quick Start
 
@@ -35,9 +34,15 @@ A lightweight, instant-play dashboard for managing podcast audio stings and prod
    - Select your audio sting files (MP3, WAV, OGG, etc.)
    - Click "Add to Dashboard"
 
-4. **Start using**
+4. **Set up TMDB Integration (Optional)**
+   - Get a free API key from [The Movie Database](https://www.themoviedb.org/settings/api)
+   - Enter your API key in the "Trending Actors (TMDb)" section
+   - Click "Save Key" to enable trending actors features
+
+5. **Start using**
    - Click any audio card to play the sting instantly
    - Press Space to stop playback
+   - Use trending actors data during podcast recording
    - Use during podcast recording for smooth transitions
 
 ## Usage
@@ -60,12 +65,20 @@ You can add audio files in two ways:
 
 - **Space**: Stop currently playing audio (works when not focused on input fields)
 
+### Using Trending Actors
+
+1. **Load Trending Actors**: Click "🔥 Load Trending Actors" to fetch the latest trending actors
+2. **Random Actor**: Click "🎲 Random Trending Actor" to generate a random high-trending actor
+3. **Filter by Genre**: Use the genre dropdown to filter actors by movie genre
+4. **View Details**: See actor popularity scores and their known works
+
 ### During Recording
 
 1. Keep the dashboard open on a second monitor or device
 2. Click audio cards to trigger stings during recording
-3. Use keyboard shortcuts for quick control
-4. No latency - perfect for live podcast production
+3. Reference trending actors for podcast topics or games
+4. Use keyboard shortcuts for quick control
+5. No latency - perfect for live podcast production
 
 ## Browser Compatibility
 
@@ -98,12 +111,12 @@ pitch-off-dashboard/
 
 This dashboard is designed to be extensible. Planned features include:
 
-- **Movie Database Integration**: Integration with TMDb API for actor lookups
-- **Actor Search**: Find actors by name, category, or film type
-- **Filtering System**: A-list, B-list, horror specialists, etc.
+- **Actor Search**: Find specific actors by name
+- **Advanced Filtering**: A-list, B-list, horror specialists, etc.
 - **Favorites**: Save frequently used stings and actors
 - **Playlists**: Create sequences of audio stings
 - **Hotkeys**: Assign number keys to specific stings
+- **Enhanced Actor Details**: Show filmography and recent projects
 
 ## Contributing
 
