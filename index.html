@@ -594,8 +594,10 @@
             const actorKnownFor = escapeHtml(knownFor);
             const actorAlt = escapeHtml(actor.name);
             
+            const fallbackImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="120" viewBox="0 0 80 120"%3E%3Crect fill="%23ddd" width="80" height="120"/%3E%3Ctext x="50%25" y="50%25" font-size="14" fill="%23999" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
+            
             card.innerHTML = `
-                <img src="${escapeHtml(imageSrc)}" alt="${actorAlt}" class="actor-image" onerror="this.src='${NO_IMAGE_PLACEHOLDER}'">
+                <img src="${escapeHtml(imageSrc)}" alt="${actorAlt}" class="actor-image" onerror="this.src='${fallbackImage}'">
                 <div class="actor-info">
                     <div class="actor-name">${actorName}</div>
                     <div class="actor-popularity">⭐ Popularity: ${actorPopularity}</div>
@@ -621,7 +623,7 @@
                 return;
             }
             
-            // Get a random actor from high popularity ones (top 50%)
+            // Get a random actor from high popularity ones (above threshold)
             const highTrendingActors = actorsPool.filter(actor => actor.popularity > HIGH_POPULARITY_THRESHOLD);
             const poolToUse = highTrendingActors.length > 0 ? highTrendingActors : actorsPool;
             const randomActor = poolToUse[Math.floor(Math.random() * poolToUse.length)];
