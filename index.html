@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pitch-Off Podcast Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            padding: 30px 0;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .audio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .audio-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .audio-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .audio-card:active {
+            transform: translateY(-2px);
+        }
+
+        .audio-card h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .audio-card p {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .play-button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .play-button:hover {
+            background: #f0f0f0;
+            transform: scale(1.05);
+        }
+
+        .play-button:active {
+            transform: scale(0.98);
+        }
+
+        .play-button.playing {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .file-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .file-input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .add-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .add-button:hover {
+            background: #764ba2;
+        }
+
+        .status-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .now-playing {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .now-playing.active {
+            display: block;
+        }
+
+        .now-playing h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .future-features {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .future-features h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .future-features ul {
+            list-style-position: inside;
+            color: #666;
+        }
+
+        .future-features li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎙️ Pitch-Off Podcast Dashboard</h1>
+            <p>Instant Audio Stings & Production Tools</p>
+        </header>
+
+        <div class="dashboard">
+            <div class="section">
+                <h2>Now Playing</h2>
+                <div class="now-playing" id="nowPlaying">
+                    <h3 id="currentTrackName">No track playing</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Load Custom Audio</h2>
+                <div class="upload-section">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="audioFileInput" class="file-input" accept="audio/*" multiple>
+                        <button class="add-button" onclick="addCustomAudio()">Add to Dashboard</button>
+                    </div>
+                    <div class="status-message" id="statusMessage"></div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Audio Stings</h2>
+                <div class="audio-grid" id="audioGrid">
+                    <!-- Audio cards will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <div class="future-features">
+                <h3>🎬 Coming Soon: Movie Database Integration</h3>
+                <ul>
+                    <li>Look up Hollywood actors and their stats</li>
+                    <li>Search by category (Horror, Action, Comedy, etc.)</li>
+                    <li>Filter by A-list, B-list actors</li>
+                    <li>Integration with The Movie Database (TMDb)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let audioElements = {};
+        let currentlyPlaying = null;
+        let customAudioFiles = [];
+
+        // Default audio stings (examples - these would be replaced with actual files)
+        const defaultStings = [
+            { id: 'intro', name: 'Intro Sting', description: 'Opening theme', file: null },
+            { id: 'transition', name: 'Transition', description: 'Segment transition', file: null },
+            { id: 'outro', name: 'Outro Sting', description: 'Closing theme', file: null },
+            { id: 'comedy', name: 'Comedy Beat', description: 'Funny moment sound', file: null },
+            { id: 'dramatic', name: 'Dramatic', description: 'Tension builder', file: null },
+            { id: 'applause', name: 'Applause', description: 'Audience reaction', file: null }
+        ];
+
+        // Initialize dashboard
+        function initDashboard() {
+            renderAudioCards();
+        }
+
+        // Render audio cards
+        function renderAudioCards() {
+            const grid = document.getElementById('audioGrid');
+            grid.innerHTML = '';
+
+            // Render default stings
+            defaultStings.forEach(sting => {
+                if (!sting.file) {
+                    const card = createPlaceholderCard(sting);
+                    grid.appendChild(card);
+                } else {
+                    const card = createAudioCard(sting);
+                    grid.appendChild(card);
+                }
+            });
+
+            // Render custom audio files
+            customAudioFiles.forEach((audio, index) => {
+                const card = createAudioCard({
+                    id: `custom-${index}`,
+                    name: audio.name,
+                    description: 'Custom audio',
+                    file: audio.file
+                });
+                grid.appendChild(card);
+            });
+        }
+
+        // Create placeholder card for audio not yet loaded
+        function createPlaceholderCard(sting) {
+            const card = document.createElement('div');
+            card.className = 'audio-card';
+            card.style.opacity = '0.6';
+            card.innerHTML = `
+                <h3>${sting.name}</h3>
+                <p>${sting.description}</p>
+                <button class="play-button" disabled>No Audio File</button>
+            `;
+            return card;
+        }
+
+        // Create audio card
+        function createAudioCard(audio) {
+            const card = document.createElement('div');
+            card.className = 'audio-card';
+            card.innerHTML = `
+                <h3>${audio.name}</h3>
+                <p>${audio.description}</p>
+                <button class="play-button" onclick="toggleAudio('${audio.id}')">▶ Play</button>
+            `;
+
+            // Create audio element
+            if (audio.file) {
+                const audioElement = new Audio();
+                audioElement.src = audio.file;
+                audioElement.addEventListener('ended', () => onAudioEnded(audio.id));
+                audioElement.addEventListener('timeupdate', () => updateProgress(audio.id));
+                audioElements[audio.id] = audioElement;
+            }
+
+            return card;
+        }
+
+        // Toggle audio playback
+        function toggleAudio(id) {
+            const audio = audioElements[id];
+            if (!audio) return;
+
+            // Stop currently playing audio
+            if (currentlyPlaying && currentlyPlaying !== id) {
+                stopAudio(currentlyPlaying);
+            }
+
+            if (audio.paused) {
+                playAudio(id);
+            } else {
+                stopAudio(id);
+            }
+        }
+
+        // Play audio
+        function playAudio(id) {
+            const audio = audioElements[id];
+            if (!audio) return;
+
+            audio.currentTime = 0; // Start from beginning
+            audio.play();
+            currentlyPlaying = id;
+
+            // Update UI
+            updatePlayButton(id, true);
+            showNowPlaying(id);
+        }
+
+        // Stop audio
+        function stopAudio(id) {
+            const audio = audioElements[id];
+            if (!audio) return;
+
+            audio.pause();
+            audio.currentTime = 0;
+
+            // Update UI
+            updatePlayButton(id, false);
+            
+            if (currentlyPlaying === id) {
+                currentlyPlaying = null;
+                hideNowPlaying();
+            }
+        }
+
+        // Audio ended callback
+        function onAudioEnded(id) {
+            updatePlayButton(id, false);
+            if (currentlyPlaying === id) {
+                currentlyPlaying = null;
+                hideNowPlaying();
+            }
+        }
+
+        // Update play button state
+        function updatePlayButton(id, isPlaying) {
+            const buttons = document.querySelectorAll('.play-button');
+            buttons.forEach(button => {
+                if (button.onclick && button.onclick.toString().includes(id)) {
+                    if (isPlaying) {
+                        button.textContent = '⏹ Stop';
+                        button.classList.add('playing');
+                    } else {
+                        button.textContent = '▶ Play';
+                        button.classList.remove('playing');
+                    }
+                }
+            });
+        }
+
+        // Show now playing section
+        function showNowPlaying(id) {
+            const nowPlaying = document.getElementById('nowPlaying');
+            const trackName = document.getElementById('currentTrackName');
+            
+            // Find audio name
+            let audioName = 'Unknown';
+            const defaultSting = defaultStings.find(s => s.id === id);
+            if (defaultSting) {
+                audioName = defaultSting.name;
+            } else {
+                const customIndex = parseInt(id.replace('custom-', ''));
+                if (!isNaN(customIndex) && customAudioFiles[customIndex]) {
+                    audioName = customAudioFiles[customIndex].name;
+                }
+            }
+
+            trackName.textContent = audioName;
+            nowPlaying.classList.add('active');
+        }
+
+        // Hide now playing section
+        function hideNowPlaying() {
+            const nowPlaying = document.getElementById('nowPlaying');
+            nowPlaying.classList.remove('active');
+            document.getElementById('progressFill').style.width = '0%';
+        }
+
+        // Update progress bar
+        function updateProgress(id) {
+            if (currentlyPlaying !== id) return;
+
+            const audio = audioElements[id];
+            if (!audio) return;
+
+            const progress = (audio.currentTime / audio.duration) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+        }
+
+        // Add custom audio
+        function addCustomAudio() {
+            const fileInput = document.getElementById('audioFileInput');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showStatus('Please select at least one audio file', 'error');
+                return;
+            }
+
+            Array.from(fileInput.files).forEach(file => {
+                if (file.type.startsWith('audio/')) {
+                    const url = URL.createObjectURL(file);
+                    customAudioFiles.push({
+                        name: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
+                        file: url
+                    });
+                }
+            });
+
+            renderAudioCards();
+            fileInput.value = ''; // Clear input
+            showStatus(`Added ${fileInput.files.length} audio file(s)`, 'success');
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+            
+            setTimeout(() => {
+                statusMessage.className = 'status-message';
+            }, 3000);
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', initDashboard);
+
+        // Handle keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Space to stop all audio
+            if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+                e.preventDefault();
+                if (currentlyPlaying) {
+                    stopAudio(currentlyPlaying);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
