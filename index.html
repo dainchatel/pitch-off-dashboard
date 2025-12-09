@@ -402,6 +402,7 @@
                         <input type="text" id="tmdbApiKey" class="api-key-input" placeholder="Enter TMDb API Key (e.g., from https://www.themoviedb.org/settings/api)">
                         <button class="add-button" onclick="saveTmdbApiKey()">Save Key</button>
                     </div>
+                    <div class="status-message" id="tmdbStatusMessage"></div>
                     <p style="margin-top: 10px; font-size: 0.85em; color: #888;">Get your free API key from <a href="https://www.themoviedb.org/settings/api" target="_blank" style="color: #667eea;">The Movie Database</a></p>
                     <p style="margin-top: 5px; font-size: 0.8em; color: #ff6b6b;">⚠️ Note: Your API key will be stored in browser localStorage and accessible to scripts on this domain.</p>
                 </div>
@@ -472,14 +473,14 @@
             const key = apiKeyInput.value.trim();
             
             if (!key) {
-                showStatus('Please enter a valid API key', 'error');
+                showStatus('Please enter a valid API key', 'error', 'tmdbStatusMessage');
                 return;
             }
             
             tmdbApiKey = key;
             localStorage.setItem('tmdbApiKey', key);
             document.getElementById('tmdbContent').style.display = 'block';
-            showStatus('API key saved successfully!', 'success');
+            showStatus('API key saved successfully!', 'success', 'tmdbStatusMessage');
             loadGenres();
         }
 
@@ -507,7 +508,7 @@
                 }
             } catch (error) {
                 console.error('Error loading genres:', error);
-                showStatus('Failed to load genres. Please check your API key.', 'error');
+                showStatus('Failed to load genres. Please check your API key.', 'error', 'tmdbStatusMessage');
             }
         }
 
@@ -606,7 +607,7 @@
         // Get random trending actor
         function getRandomTrendingActor() {
             if (!allTrendingActors || allTrendingActors.length === 0) {
-                showStatus('Please load trending actors first', 'error');
+                showStatus('Please load trending actors first', 'error', 'tmdbStatusMessage');
                 return;
             }
             
@@ -614,7 +615,7 @@
             let actorsPool = currentGenreFilter ? filterActorsByGenre(allTrendingActors, currentGenreFilter) : allTrendingActors;
             
             if (actorsPool.length === 0) {
-                showStatus('No actors found for the selected genre', 'error');
+                showStatus('No actors found for the selected genre', 'error', 'tmdbStatusMessage');
                 return;
             }
             
@@ -871,8 +872,10 @@
         }
 
         // Show status message
-        function showStatus(message, type) {
-            const statusMessage = document.getElementById('statusMessage');
+        function showStatus(message, type, elementId = 'statusMessage') {
+            const statusMessage = document.getElementById(elementId);
+            if (!statusMessage) return;
+            
             statusMessage.textContent = message;
             statusMessage.className = `status-message ${type}`;
             
