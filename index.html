@@ -403,6 +403,7 @@
                         <button class="add-button" onclick="saveTmdbApiKey()">Save Key</button>
                     </div>
                     <p style="margin-top: 10px; font-size: 0.85em; color: #888;">Get your free API key from <a href="https://www.themoviedb.org/settings/api" target="_blank" style="color: #667eea;">The Movie Database</a></p>
+                    <p style="margin-top: 5px; font-size: 0.8em; color: #ff6b6b;">⚠️ Note: Your API key will be stored in browser localStorage and accessible to scripts on this domain.</p>
                 </div>
 
                 <div id="tmdbContent" style="display: none;">
@@ -484,6 +485,11 @@
         async function loadGenres() {
             try {
                 const response = await fetch(`${TMDB_BASE_URL}/genre/movie/list?api_key=${tmdbApiKey}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.genres) {
@@ -499,6 +505,7 @@
                 }
             } catch (error) {
                 console.error('Error loading genres:', error);
+                showStatus('Failed to load genres. Please check your API key.', 'error');
             }
         }
 
@@ -509,6 +516,11 @@
             
             try {
                 const response = await fetch(`${TMDB_BASE_URL}/trending/person/week?api_key=${tmdbApiKey}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.results) {
@@ -541,6 +553,13 @@
             });
         }
 
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // Create actor card
         function createActorCard(actor, isHighlight = false) {
             const card = document.createElement('div');
@@ -555,12 +574,18 @@
                 ? actor.known_for.slice(0, 3).map(work => work.title || work.name).join(', ')
                 : 'N/A';
             
+            // Use escaped values to prevent XSS
+            const actorName = escapeHtml(actor.name);
+            const actorPopularity = actor.popularity.toFixed(1);
+            const actorKnownFor = escapeHtml(knownFor);
+            const actorAlt = escapeHtml(actor.name);
+            
             card.innerHTML = `
-                <img src="${imageSrc}" alt="${actor.name}" class="actor-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"80\\" height=\\"120\\" viewBox=\\"0 0 80 120\\"%3E%3Crect fill=\\"%23ddd\\" width=\\"80\\" height=\\"120\\"/%3E%3Ctext x=\\"50%25\\" y=\\"50%25\\" font-size=\\"14\\" fill=\\"%23999\\" text-anchor=\\"middle\\" dy=\\".3em\\"%3ENo Image%3C/text%3E%3C/svg%3E'">
+                <img src="${escapeHtml(imageSrc)}" alt="${actorAlt}" class="actor-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"80\\" height=\\"120\\" viewBox=\\"0 0 80 120\\"%3E%3Crect fill=\\"%23ddd\\" width=\\"80\\" height=\\"120\\"/%3E%3Ctext x=\\"50%25\\" y=\\"50%25\\" font-size=\\"14\\" fill=\\"%23999\\" text-anchor=\\"middle\\" dy=\\".3em\\"%3ENo Image%3C/text%3E%3C/svg%3E'">
                 <div class="actor-info">
-                    <div class="actor-name">${actor.name}</div>
-                    <div class="actor-popularity">⭐ Popularity: ${actor.popularity.toFixed(1)}</div>
-                    <div class="actor-known-for">Known for: ${knownFor}</div>
+                    <div class="actor-name">${actorName}</div>
+                    <div class="actor-popularity">⭐ Popularity: ${actorPopularity}</div>
+                    <div class="actor-known-for">Known for: ${actorKnownFor}</div>
                 </div>
             `;
             
