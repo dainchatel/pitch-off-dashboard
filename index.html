@@ -399,7 +399,7 @@
                 <div class="upload-section">
                     <p style="margin-bottom: 10px; color: #666;">Enter your TMDb API Key to access trending actors data:</p>
                     <div class="file-input-wrapper">
-                        <input type="text" id="tmdbApiKey" class="api-key-input" placeholder="Enter TMDb API Key (e.g., from https://www.themoviedb.org/settings/api)">
+                        <input type="password" id="tmdbApiKey" class="api-key-input" placeholder="Enter TMDb API Key (e.g., from https://www.themoviedb.org/settings/api)">
                         <button class="add-button" onclick="saveTmdbApiKey()">Save Key</button>
                     </div>
                     <div class="status-message" id="tmdbStatusMessage"></div>
@@ -594,16 +594,21 @@
             const actorKnownFor = escapeHtml(knownFor);
             const actorAlt = escapeHtml(actor.name);
             
-            const fallbackImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="120" viewBox="0 0 80 120"%3E%3Crect fill="%23ddd" width="80" height="120"/%3E%3Ctext x="50%25" y="50%25" font-size="14" fill="%23999" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
-            
             card.innerHTML = `
-                <img src="${escapeHtml(imageSrc)}" alt="${actorAlt}" class="actor-image" onerror="this.src='${fallbackImage}'">
+                <img src="${escapeHtml(imageSrc)}" alt="${actorAlt}" class="actor-image" data-fallback="${NO_IMAGE_PLACEHOLDER}">
                 <div class="actor-info">
                     <div class="actor-name">${actorName}</div>
                     <div class="actor-popularity">⭐ Popularity: ${actorPopularity}</div>
                     <div class="actor-known-for">Known for: ${actorKnownFor}</div>
                 </div>
             `;
+            
+            // Set up error handler without inline event handler
+            const img = card.querySelector('.actor-image');
+            img.onerror = function() {
+                this.onerror = null; // Prevent infinite loop
+                this.src = NO_IMAGE_PLACEHOLDER;
+            };
             
             return card;
         }
