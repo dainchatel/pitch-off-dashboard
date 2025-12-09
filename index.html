@@ -435,6 +435,8 @@
         let currentGenreFilter = '';
         const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
         const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w185';
+        const HIGH_POPULARITY_THRESHOLD = 20;
+        const NO_IMAGE_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="120" viewBox="0 0 80 120"%3E%3Crect fill="%23ddd" width="80" height="120"/%3E%3Ctext x="50%25" y="50%25" font-size="14" fill="%23999" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
 
         // Default audio stings (examples - these would be replaced with actual files)
         const defaultStings = [
@@ -560,15 +562,24 @@
             return div.innerHTML;
         }
 
+        // Validate image URL for security
+        function isValidImageUrl(url) {
+            return url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:'));
+        }
+
         // Create actor card
         function createActorCard(actor, isHighlight = false) {
             const card = document.createElement('div');
             card.className = 'actor-card' + (isHighlight ? ' random-actor-highlight' : '');
             card.setAttribute('data-actor-id', actor.id);
             
-            const imageSrc = actor.profile_path 
-                ? `${TMDB_IMAGE_BASE_URL}${actor.profile_path}` 
-                : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="120" viewBox="0 0 80 120"%3E%3Crect fill="%23ddd" width="80" height="120"/%3E%3Ctext x="50%25" y="50%25" font-size="14" fill="%23999" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
+            let imageSrc = NO_IMAGE_PLACEHOLDER;
+            if (actor.profile_path) {
+                const tmdbImageUrl = `${TMDB_IMAGE_BASE_URL}${actor.profile_path}`;
+                if (isValidImageUrl(tmdbImageUrl)) {
+                    imageSrc = tmdbImageUrl;
+                }
+            }
             
             const knownFor = actor.known_for 
                 ? actor.known_for.slice(0, 3).map(work => work.title || work.name).join(', ')
@@ -581,7 +592,7 @@
             const actorAlt = escapeHtml(actor.name);
             
             card.innerHTML = `
-                <img src="${escapeHtml(imageSrc)}" alt="${actorAlt}" class="actor-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"80\\" height=\\"120\\" viewBox=\\"0 0 80 120\\"%3E%3Crect fill=\\"%23ddd\\" width=\\"80\\" height=\\"120\\"/%3E%3Ctext x=\\"50%25\\" y=\\"50%25\\" font-size=\\"14\\" fill=\\"%23999\\" text-anchor=\\"middle\\" dy=\\".3em\\"%3ENo Image%3C/text%3E%3C/svg%3E'">
+                <img src="${escapeHtml(imageSrc)}" alt="${actorAlt}" class="actor-image" onerror="this.src='${NO_IMAGE_PLACEHOLDER}'">
                 <div class="actor-info">
                     <div class="actor-name">${actorName}</div>
                     <div class="actor-popularity">⭐ Popularity: ${actorPopularity}</div>
@@ -608,7 +619,7 @@
             }
             
             // Get a random actor from high popularity ones (top 50%)
-            const highTrendingActors = actorsPool.filter(actor => actor.popularity > 20);
+            const highTrendingActors = actorsPool.filter(actor => actor.popularity > HIGH_POPULARITY_THRESHOLD);
             const poolToUse = highTrendingActors.length > 0 ? highTrendingActors : actorsPool;
             const randomActor = poolToUse[Math.floor(Math.random() * poolToUse.length)];
             
