@@ -533,7 +533,8 @@
                     throw new Error('Failed to load trending actors');
                 }
             } catch (error) {
-                container.innerHTML = `<div class="error-message">Error: ${error.message}. Please check your API key.</div>`;
+                const errorMsg = escapeHtml(error.message || 'Unknown error');
+                container.innerHTML = `<div class="error-message">Error: ${errorMsg}. Please check your API key.</div>`;
                 console.error('Error loading trending actors:', error);
             }
         }
@@ -558,6 +559,7 @@
 
         // Escape HTML to prevent XSS
         function escapeHtml(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
@@ -583,12 +585,12 @@
             }
             
             const knownFor = actor.known_for 
-                ? actor.known_for.slice(0, 3).map(work => work.title || work.name).join(', ')
+                ? actor.known_for.slice(0, 3).map(work => work.title || work.name).filter(Boolean).join(', ') || 'N/A'
                 : 'N/A';
             
             // Use escaped values to prevent XSS
             const actorName = escapeHtml(actor.name);
-            const actorPopularity = actor.popularity.toFixed(1);
+            const actorPopularity = (actor.popularity || 0).toFixed(1);
             const actorKnownFor = escapeHtml(knownFor);
             const actorAlt = escapeHtml(actor.name);
             
