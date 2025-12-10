@@ -40,6 +40,81 @@
             opacity: 0.9;
         }
 
+        .timer-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .timer-display {
+            font-size: 4em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .timer-display.warning {
+            color: #ff6b6b;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .timer-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .timer-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .timer-button:active {
+            transform: translateY(0);
+        }
+
+        .timer-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .timer-button.start {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .timer-button.pause {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+        }
+
+        .timer-button.reset {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
         .dashboard {
             background: white;
             border-radius: 15px;
@@ -364,6 +439,16 @@
             <p>Instant Audio Stings & Production Tools</p>
         </header>
 
+        <div class="timer-section">
+            <h2 style="color: #667eea; margin-bottom: 10px;">⏱️ Podcast Timer</h2>
+            <div class="timer-display" id="timerDisplay">30:00</div>
+            <div class="timer-controls">
+                <button class="timer-button start" id="startButton" onclick="startTimer()">▶️ Start</button>
+                <button class="timer-button pause" id="pauseButton" onclick="pauseTimer()" disabled>⏸️ Pause</button>
+                <button class="timer-button reset" id="resetButton" onclick="resetTimer()">🔄 Reset</button>
+            </div>
+        </div>
+
         <div class="dashboard">
             <div class="section">
                 <h2>Now Playing</h2>
@@ -404,6 +489,7 @@
                     </div>
                     <div class="status-message" id="tmdbStatusMessage"></div>
                     <p style="margin-top: 10px; font-size: 0.85em; color: #888;">Get your free API key from <a href="https://www.themoviedb.org/settings/api" target="_blank" style="color: #667eea;">The Movie Database</a></p>
+                    <p style="margin-top: 5px; font-size: 0.8em; color: #667eea;">💡 Tip: You can set the API key as an environment variable <code>TMDB_API_KEY</code> before loading this page.</p>
                     <p style="margin-top: 5px; font-size: 0.8em; color: #ff6b6b;">⚠️ Note: Your API key will be stored in browser localStorage and accessible to scripts on this domain.</p>
                 </div>
 
@@ -430,8 +516,19 @@
         let currentlyPlaying = null;
         let customAudioFiles = [];
 
+        // Timer state
+        let timerSeconds = 30 * 60; // 30 minutes in seconds
+        let timerInterval = null;
+        let timerRunning = false;
+
         // TMDB API state
-        let tmdbApiKey = localStorage.getItem('tmdbApiKey') || '';
+        // Check for environment variable first, then localStorage
+        let tmdbApiKey = '';
+        if (typeof TMDB_API_KEY !== 'undefined') {
+            tmdbApiKey = TMDB_API_KEY;
+        } else {
+            tmdbApiKey = localStorage.getItem('tmdbApiKey') || '';
+        }
         let allTrendingActors = [];
         let currentGenreFilter = '';
         const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
@@ -453,6 +550,63 @@
         function initDashboard() {
             renderAudioCards();
             initTmdb();
+            updateTimerDisplay();
+        }
+
+        // Timer functions
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timerDisplay');
+            display.textContent = formatTime(timerSeconds);
+            
+            // Add warning class if under 5 minutes
+            if (timerSeconds <= 300 && timerSeconds > 0) {
+                display.classList.add('warning');
+            } else {
+                display.classList.remove('warning');
+            }
+        }
+
+        function startTimer() {
+            if (timerRunning) return;
+            
+            timerRunning = true;
+            document.getElementById('startButton').disabled = true;
+            document.getElementById('pauseButton').disabled = false;
+            
+            timerInterval = setInterval(() => {
+                if (timerSeconds > 0) {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                    
+                    // Play sound or alert when timer reaches 0
+                    if (timerSeconds === 0) {
+                        pauseTimer();
+                        alert('⏱️ Timer complete! 30 minutes have elapsed.');
+                    }
+                } else {
+                    pauseTimer();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            timerRunning = false;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            document.getElementById('startButton').disabled = false;
+            document.getElementById('pauseButton').disabled = true;
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timerSeconds = 30 * 60;
+            updateTimerDisplay();
         }
 
         // Initialize TMDB section
@@ -461,7 +615,14 @@
             const tmdbContent = document.getElementById('tmdbContent');
             
             if (tmdbApiKey) {
-                apiKeyInput.value = tmdbApiKey;
+                // If API key is from environment variable, show it masked
+                if (typeof TMDB_API_KEY !== 'undefined') {
+                    apiKeyInput.value = '••••••••••••••••';
+                    apiKeyInput.disabled = true;
+                    showStatus('Using API key from environment variable', 'success', 'tmdbStatusMessage');
+                } else {
+                    apiKeyInput.value = tmdbApiKey;
+                }
                 tmdbContent.style.display = 'block';
                 loadGenres();
             }

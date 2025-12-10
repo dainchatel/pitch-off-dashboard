@@ -5,6 +5,10 @@ A lightweight, instant-play dashboard for managing podcast audio stings and prod
 ## Features
 
 ### Current Features
+- **⏱️ Podcast Timer**: 30-minute countdown timer prominently displayed at the top
+  - Start, pause, and reset controls
+  - Visual warning when under 5 minutes remain
+  - Audio alert when timer completes
 - **Instant Audio Playback**: Load and play audio files with zero latency
 - **Custom Audio Upload**: Add your own audio stings through the browser interface
 - **Visual Feedback**: See what's currently playing with progress tracking
@@ -16,6 +20,7 @@ A lightweight, instant-play dashboard for managing podcast audio stings and prod
   - Generate random high trending actor
   - Filter trending actors by genre
   - See actor popularity and known works
+  - Environment variable support for API key
 
 ## Quick Start
 
@@ -36,8 +41,12 @@ A lightweight, instant-play dashboard for managing podcast audio stings and prod
 
 4. **Set up TMDB Integration (Optional)**
    - Get a free API key from [The Movie Database](https://www.themoviedb.org/settings/api)
-   - Enter your API key in the "Trending Actors (TMDb)" section
-   - Click "Save Key" to enable trending actors features
+   - **Option 1**: Set as environment variable (recommended)
+     ```html
+     <script>var TMDB_API_KEY = 'your_api_key_here';</script>
+     <script src="path/to/dashboard.js"></script>
+     ```
+   - **Option 2**: Enter your API key in the "Trending Actors (TMDb)" section and click "Save Key"
 
 5. **Start using**
    - Click any audio card to play the sting instantly
@@ -60,6 +69,14 @@ You can add audio files in two ways:
 2. **Using the Audio Directory**
    - Place your audio files in the `audio/stings/` directory
    - See `audio/README.md` for naming conventions
+
+### Using the Podcast Timer
+
+1. **Start Timer**: Click "▶️ Start" to begin the 30-minute countdown
+2. **Pause Timer**: Click "⏸️ Pause" to pause the countdown (button enabled only when timer is running)
+3. **Reset Timer**: Click "🔄 Reset" to reset the timer back to 30:00
+4. **Visual Warning**: Timer turns red and pulses when less than 5 minutes remain
+5. **Completion Alert**: An alert appears when the timer reaches 00:00
 
 ### Keyboard Shortcuts
 
