@@ -4,6 +4,11 @@
 // Global state for audio stings loaded from directory
 let stingAudioFiles = {};
 
+// Helper function to remove file extension
+function getFilenameWithoutExtension(filename) {
+    return filename.replace(/\.[^/.]+$/, '');
+}
+
 // Load audio stings from the public audio directory at runtime
 async function loadStingsFromDirectory() {
     try {
@@ -12,12 +17,12 @@ async function loadStingsFromDirectory() {
         // Try to fetch the directory listing (this requires a web server)
         // For local file:// protocol, we'll use a predefined list
         const stingFiles = [
-            'lightning-round.mp3',
-            'crunch-numbers.mp3',
-            'show-footage.mp3',
-            'show-footage-alt.mp3',
-            'tagline-title.mp3',
-            'meetings.mp3'
+            'lightning-round.wav',
+            'crunch-numbers.wav',
+            'show-footage.wav',
+            'show-footage-alt.wav',
+            'tagline-title.wav',
+            'meetings.wav'
         ];
         
         // Load each audio file
@@ -29,7 +34,7 @@ async function loadStingsFromDirectory() {
                 audio.preload = 'auto';
                 
                 // Store by filename (without extension)
-                const name = filename.replace(/\.[^/.]+$/, '');
+                const name = getFilenameWithoutExtension(filename);
                 stingAudioFiles[name] = audio;
                 
                 console.log(`Loaded sting: ${name}`);
@@ -50,7 +55,7 @@ function playOneSting(stingPath) {
         console.log('Playing sting:', stingPath);
         
         // Extract filename from path
-        const filename = stingPath.split('/').pop().replace(/\.[^/.]+$/, '');
+        const filename = getFilenameWithoutExtension(stingPath.split('/').pop());
         
         // Try to play from loaded stings
         if (stingAudioFiles[filename]) {

@@ -6,6 +6,9 @@ let timerMode = 'manual'; // 'manual' or 'automatic'
 let selectedSegments = { 20: null, 10: null }; // Segments for 20 and 10 minute marks
 let triggeredSegments = { 20: false, 10: false }; // Track which segments have been triggered
 
+// Constants
+const SEGMENT_NOTIFICATION_DURATION = 5000; // milliseconds
+
 // Timer functions
 function formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
@@ -92,8 +95,13 @@ function selectRandomSegments() {
         return;
     }
     
-    // Randomly select 2 different segments
-    const shuffled = [...segments].sort(() => Math.random() - 0.5);
+    // Randomly select 2 different segments using Fisher-Yates shuffle
+    const shuffled = [...segments];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    
     selectedSegments[20] = shuffled[0];
     selectedSegments[10] = shuffled[1] || shuffled[0]; // Fallback to first if only one segment
 }
@@ -142,10 +150,10 @@ function showSegmentNotification(segmentName, minuteMark) {
     notification.textContent = `🎬 ${segmentName} - ${minuteMark} minute mark`;
     document.body.appendChild(notification);
     
-    // Remove notification after 5 seconds
+    // Remove notification after defined duration
     setTimeout(() => {
         notification.remove();
-    }, 5000);
+    }, SEGMENT_NOTIFICATION_DURATION);
 }
 
 // Show selected segments in UI
