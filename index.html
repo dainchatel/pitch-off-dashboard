@@ -40,6 +40,81 @@
             opacity: 0.9;
         }
 
+        .timer-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .timer-display {
+            font-size: 4em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .timer-display.warning {
+            color: #ff6b6b;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .timer-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .timer-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .timer-button:active {
+            transform: translateY(0);
+        }
+
+        .timer-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .timer-button.start {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .timer-button.pause {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+        }
+
+        .timer-button.reset {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
         .dashboard {
             background: white;
             border-radius: 15px;
@@ -232,6 +307,129 @@
         .future-features li {
             margin-bottom: 5px;
         }
+
+        .tmdb-section {
+            margin-top: 20px;
+        }
+
+        .tmdb-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tmdb-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .tmdb-button:hover {
+            background: #764ba2;
+        }
+
+        .tmdb-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .genre-select {
+            padding: 12px;
+            border-radius: 5px;
+            border: 2px solid #667eea;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .api-key-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px;
+            border-radius: 5px;
+            border: 2px solid #667eea;
+            font-size: 1em;
+        }
+
+        .actors-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .actor-card {
+            display: flex;
+            gap: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .actor-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .actor-image {
+            width: 80px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 5px;
+            background: #ddd;
+        }
+
+        .actor-info {
+            flex: 1;
+        }
+
+        .actor-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .actor-popularity {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .actor-known-for {
+            color: #888;
+            font-size: 0.85em;
+            font-style: italic;
+        }
+
+        .loading-message {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .random-actor-highlight {
+            border: 3px solid #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
     </style>
 </head>
 <body>
@@ -240,6 +438,16 @@
             <h1>🎙️ Pitch-Off Podcast Dashboard</h1>
             <p>Instant Audio Stings & Production Tools</p>
         </header>
+
+        <div class="timer-section">
+            <h2 style="color: #667eea; margin-bottom: 10px;">⏱️ Podcast Timer</h2>
+            <div class="timer-display" id="timerDisplay">30:00</div>
+            <div class="timer-controls">
+                <button class="timer-button start" id="startButton" onclick="startTimer()">▶️ Start</button>
+                <button class="timer-button pause" id="pauseButton" onclick="pauseTimer()" disabled>⏸️ Pause</button>
+                <button class="timer-button reset" id="resetButton" onclick="resetTimer()">🔄 Reset</button>
+            </div>
+        </div>
 
         <div class="dashboard">
             <div class="section">
@@ -270,14 +478,34 @@
                 </div>
             </div>
 
-            <div class="future-features">
-                <h3>🎬 Coming Soon: Movie Database Integration</h3>
-                <ul>
-                    <li>Look up Hollywood actors and their stats</li>
-                    <li>Search by category (Horror, Action, Comedy, etc.)</li>
-                    <li>Filter by A-list, B-list actors</li>
-                    <li>Integration with The Movie Database (TMDb)</li>
-                </ul>
+            <div class="section tmdb-section">
+                <h2>🎬 Trending Actors (TMDb)</h2>
+                
+                <div class="upload-section">
+                    <p style="margin-bottom: 10px; color: #666;">Enter your TMDb API Key to access trending actors data:</p>
+                    <div class="file-input-wrapper">
+                        <input type="password" id="tmdbApiKey" class="api-key-input" placeholder="Enter TMDb API Key (e.g., from https://www.themoviedb.org/settings/api)">
+                        <button class="add-button" onclick="saveTmdbApiKey()">Save Key</button>
+                    </div>
+                    <div class="status-message" id="tmdbStatusMessage"></div>
+                    <p style="margin-top: 10px; font-size: 0.85em; color: #888;">Get your free API key from <a href="https://www.themoviedb.org/settings/api" target="_blank" style="color: #667eea;">The Movie Database</a></p>
+                    <p style="margin-top: 5px; font-size: 0.8em; color: #667eea;">💡 Tip: You can set the API key as an environment variable <code>TMDB_API_KEY</code> before loading this page.</p>
+                    <p style="margin-top: 5px; font-size: 0.8em; color: #ff6b6b;">⚠️ Note: Your API key will be stored in browser localStorage and accessible to scripts on this domain.</p>
+                </div>
+
+                <div id="tmdbContent" style="display: none;">
+                    <div class="tmdb-controls">
+                        <button class="tmdb-button" onclick="loadTrendingActors()">🔥 Load Trending Actors</button>
+                        <button class="tmdb-button" onclick="getRandomTrendingActor()">🎲 Random Trending Actor</button>
+                        <select class="genre-select" id="genreSelect" onchange="filterByGenre()">
+                            <option value="">All Genres</option>
+                        </select>
+                    </div>
+
+                    <div id="actorsContainer">
+                        <div class="loading-message">Click "Load Trending Actors" to see the latest trending actors</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -287,6 +515,26 @@
         let audioElements = {};
         let currentlyPlaying = null;
         let customAudioFiles = [];
+
+        // Timer state
+        let timerSeconds = 30 * 60; // 30 minutes in seconds
+        let timerInterval = null;
+        let timerRunning = false;
+
+        // TMDB API state
+        // Check for environment variable first, then localStorage
+        let tmdbApiKey = '';
+        if (typeof TMDB_API_KEY !== 'undefined') {
+            tmdbApiKey = TMDB_API_KEY;
+        } else {
+            tmdbApiKey = localStorage.getItem('tmdbApiKey') || '';
+        }
+        let allTrendingActors = [];
+        let currentGenreFilter = '';
+        const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+        const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w185';
+        const HIGH_POPULARITY_THRESHOLD = 20;
+        const NO_IMAGE_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="120" viewBox="0 0 80 120"%3E%3Crect fill="%23ddd" width="80" height="120"/%3E%3Ctext x="50%25" y="50%25" font-size="14" fill="%23999" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
 
         // Default audio stings (examples - these would be replaced with actual files)
         const defaultStings = [
@@ -301,6 +549,288 @@
         // Initialize dashboard
         function initDashboard() {
             renderAudioCards();
+            initTmdb();
+            updateTimerDisplay();
+        }
+
+        // Timer functions
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timerDisplay');
+            display.textContent = formatTime(timerSeconds);
+            
+            // Add warning class if under 5 minutes
+            if (timerSeconds <= 300 && timerSeconds > 0) {
+                display.classList.add('warning');
+            } else {
+                display.classList.remove('warning');
+            }
+        }
+
+        function startTimer() {
+            if (timerRunning) return;
+            
+            timerRunning = true;
+            document.getElementById('startButton').disabled = true;
+            document.getElementById('pauseButton').disabled = false;
+            
+            timerInterval = setInterval(() => {
+                if (timerSeconds > 0) {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                    
+                    // Play sound or alert when timer reaches 0
+                    if (timerSeconds === 0) {
+                        pauseTimer();
+                        alert('⏱️ Timer complete! 30 minutes have elapsed.');
+                    }
+                } else {
+                    pauseTimer();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            timerRunning = false;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            document.getElementById('startButton').disabled = false;
+            document.getElementById('pauseButton').disabled = true;
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timerSeconds = 30 * 60;
+            updateTimerDisplay();
+        }
+
+        // Initialize TMDB section
+        function initTmdb() {
+            const apiKeyInput = document.getElementById('tmdbApiKey');
+            const tmdbContent = document.getElementById('tmdbContent');
+            
+            if (tmdbApiKey) {
+                // If API key is from environment variable, show it masked
+                if (typeof TMDB_API_KEY !== 'undefined') {
+                    apiKeyInput.value = '••••••••••••••••';
+                    apiKeyInput.disabled = true;
+                    showStatus('Using API key from environment variable', 'success', 'tmdbStatusMessage');
+                } else {
+                    apiKeyInput.value = tmdbApiKey;
+                }
+                tmdbContent.style.display = 'block';
+                loadGenres();
+            }
+        }
+
+        // Save TMDB API Key
+        function saveTmdbApiKey() {
+            const apiKeyInput = document.getElementById('tmdbApiKey');
+            const key = apiKeyInput.value.trim();
+            
+            if (!key) {
+                showStatus('Please enter a valid API key', 'error', 'tmdbStatusMessage');
+                return;
+            }
+            
+            tmdbApiKey = key;
+            localStorage.setItem('tmdbApiKey', key);
+            document.getElementById('tmdbContent').style.display = 'block';
+            showStatus('API key saved successfully!', 'success', 'tmdbStatusMessage');
+            loadGenres();
+        }
+
+        // Load genres from TMDB
+        async function loadGenres() {
+            try {
+                const response = await fetch(`${TMDB_BASE_URL}/genre/movie/list?api_key=${tmdbApiKey}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.genres) {
+                    const genreSelect = document.getElementById('genreSelect');
+                    genreSelect.innerHTML = '<option value="">All Genres</option>';
+                    
+                    data.genres.forEach(genre => {
+                        const option = document.createElement('option');
+                        option.value = genre.id;
+                        option.textContent = genre.name;
+                        genreSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading genres:', error);
+                showStatus('Failed to load genres. Please check your API key.', 'error', 'tmdbStatusMessage');
+            }
+        }
+
+        // Load trending actors
+        async function loadTrendingActors() {
+            const container = document.getElementById('actorsContainer');
+            container.innerHTML = '<div class="loading-message">Loading trending actors...</div>';
+            
+            try {
+                const response = await fetch(`${TMDB_BASE_URL}/trending/person/week?api_key=${tmdbApiKey}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.results) {
+                    allTrendingActors = data.results;
+                    displayActors(allTrendingActors);
+                } else {
+                    throw new Error('Failed to load trending actors');
+                }
+            } catch (error) {
+                const errorMsg = escapeHtml(error.message || 'Unknown error');
+                container.innerHTML = `<div class="error-message">Error: ${errorMsg}. Please check your API key.</div>`;
+                console.error('Error loading trending actors:', error);
+            }
+        }
+
+        // Display actors
+        function displayActors(actors) {
+            const container = document.getElementById('actorsContainer');
+            
+            if (!actors || actors.length === 0) {
+                container.innerHTML = '<div class="loading-message">No actors found</div>';
+                return;
+            }
+            
+            container.innerHTML = '<div class="actors-list"></div>';
+            const actorsList = container.querySelector('.actors-list');
+            
+            actors.forEach(actor => {
+                const actorCard = createActorCard(actor);
+                actorsList.appendChild(actorCard);
+            });
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Validate image URL for security
+        function isValidImageUrl(url) {
+            return url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:'));
+        }
+
+        // Create actor card
+        function createActorCard(actor, isHighlight = false) {
+            const card = document.createElement('div');
+            card.className = 'actor-card' + (isHighlight ? ' random-actor-highlight' : '');
+            card.setAttribute('data-actor-id', actor.id);
+            
+            let imageSrc = NO_IMAGE_PLACEHOLDER;
+            if (actor.profile_path) {
+                const tmdbImageUrl = `${TMDB_IMAGE_BASE_URL}${actor.profile_path}`;
+                if (isValidImageUrl(tmdbImageUrl)) {
+                    imageSrc = tmdbImageUrl;
+                }
+            }
+            
+            const knownFor = actor.known_for 
+                ? actor.known_for.slice(0, 3).map(work => work.title || work.name).filter(Boolean).join(', ') || 'N/A'
+                : 'N/A';
+            
+            // Use escaped values to prevent XSS
+            const actorName = escapeHtml(actor.name);
+            const actorPopularity = (actor.popularity || 0).toFixed(1);
+            const actorKnownFor = escapeHtml(knownFor);
+            const actorAlt = escapeHtml(actor.name);
+            
+            card.innerHTML = `
+                <img src="${escapeHtml(imageSrc)}" alt="${actorAlt}" class="actor-image" data-fallback="${NO_IMAGE_PLACEHOLDER}">
+                <div class="actor-info">
+                    <div class="actor-name">${actorName}</div>
+                    <div class="actor-popularity">⭐ Popularity: ${actorPopularity}</div>
+                    <div class="actor-known-for">Known for: ${actorKnownFor}</div>
+                </div>
+            `;
+            
+            // Set up error handler without inline event handler
+            const img = card.querySelector('.actor-image');
+            img.onerror = function() {
+                this.onerror = null; // Prevent infinite loop
+                this.src = NO_IMAGE_PLACEHOLDER;
+            };
+            
+            return card;
+        }
+
+        // Get random trending actor
+        function getRandomTrendingActor() {
+            if (!allTrendingActors || allTrendingActors.length === 0) {
+                showStatus('Please load trending actors first', 'error', 'tmdbStatusMessage');
+                return;
+            }
+            
+            // Filter by genre if selected
+            let actorsPool = currentGenreFilter ? filterActorsByGenre(allTrendingActors, currentGenreFilter) : allTrendingActors;
+            
+            if (actorsPool.length === 0) {
+                showStatus('No actors found for the selected genre', 'error', 'tmdbStatusMessage');
+                return;
+            }
+            
+            // Get a random actor from high popularity ones (above threshold)
+            const highTrendingActors = actorsPool.filter(actor => actor.popularity > HIGH_POPULARITY_THRESHOLD);
+            const poolToUse = highTrendingActors.length > 0 ? highTrendingActors : actorsPool;
+            const randomActor = poolToUse[Math.floor(Math.random() * poolToUse.length)];
+            
+            // Display only the random actor with highlight
+            const container = document.getElementById('actorsContainer');
+            container.innerHTML = '<div class="actors-list"></div>';
+            const actorsList = container.querySelector('.actors-list');
+            
+            const actorCard = createActorCard(randomActor, true);
+            actorsList.appendChild(actorCard);
+            
+            // Scroll to the actor
+            actorCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Filter actors by genre
+        function filterActorsByGenre(actors, genreId) {
+            return actors.filter(actor => {
+                if (!actor.known_for) return false;
+                return actor.known_for.some(work => 
+                    work.genre_ids && work.genre_ids.includes(parseInt(genreId))
+                );
+            });
+        }
+
+        // Filter by genre (triggered by dropdown)
+        function filterByGenre() {
+            const genreSelect = document.getElementById('genreSelect');
+            currentGenreFilter = genreSelect.value;
+            
+            if (!allTrendingActors || allTrendingActors.length === 0) {
+                return;
+            }
+            
+            if (currentGenreFilter) {
+                const filteredActors = filterActorsByGenre(allTrendingActors, currentGenreFilter);
+                displayActors(filteredActors);
+            } else {
+                displayActors(allTrendingActors);
+            }
         }
 
         // Render audio cards
@@ -512,8 +1042,10 @@
         }
 
         // Show status message
-        function showStatus(message, type) {
-            const statusMessage = document.getElementById('statusMessage');
+        function showStatus(message, type, elementId = 'statusMessage') {
+            const statusMessage = document.getElementById(elementId);
+            if (!statusMessage) return;
+            
             statusMessage.textContent = message;
             statusMessage.className = `status-message ${type}`;
             

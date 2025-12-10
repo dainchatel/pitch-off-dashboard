@@ -5,18 +5,22 @@ A lightweight, instant-play dashboard for managing podcast audio stings and prod
 ## Features
 
 ### Current Features
+- **⏱️ Podcast Timer**: 30-minute countdown timer prominently displayed at the top
+  - Start, pause, and reset controls
+  - Visual warning when under 5 minutes remain
+  - Audio alert when timer completes
 - **Instant Audio Playback**: Load and play audio files with zero latency
 - **Custom Audio Upload**: Add your own audio stings through the browser interface
 - **Visual Feedback**: See what's currently playing with progress tracking
 - **Keyboard Shortcuts**: Press Space to stop playback instantly
 - **Responsive Design**: Works on desktop and mobile browsers
 - **No Installation Required**: Just open `index.html` in your browser
-
-### Coming Soon
-- 🎬 Movie Database Integration: Look up Hollywood actors and their stats
-- 📊 Actor filtering by category (Horror, Action, Comedy, etc.)
-- ⭐ A-list/B-list actor classification
-- 🔗 Integration with The Movie Database (TMDb)
+- **🎬 TMDB Integration**: Access trending actors data from The Movie Database
+  - View list of top trending actors
+  - Generate random high trending actor
+  - Filter trending actors by genre
+  - See actor popularity and known works
+  - Environment variable support for API key
 
 ## Quick Start
 
@@ -35,9 +39,19 @@ A lightweight, instant-play dashboard for managing podcast audio stings and prod
    - Select your audio sting files (MP3, WAV, OGG, etc.)
    - Click "Add to Dashboard"
 
-4. **Start using**
+4. **Set up TMDB Integration (Optional)**
+   - Get a free API key from [The Movie Database](https://www.themoviedb.org/settings/api)
+   - **Option 1**: Set as environment variable (recommended)
+     ```html
+     <script>var TMDB_API_KEY = 'your_api_key_here';</script>
+     <script src="path/to/dashboard.js"></script>
+     ```
+   - **Option 2**: Enter your API key in the "Trending Actors (TMDb)" section and click "Save Key"
+
+5. **Start using**
    - Click any audio card to play the sting instantly
    - Press Space to stop playback
+   - Use trending actors data during podcast recording
    - Use during podcast recording for smooth transitions
 
 ## Usage
@@ -56,16 +70,32 @@ You can add audio files in two ways:
    - Place your audio files in the `audio/stings/` directory
    - See `audio/README.md` for naming conventions
 
+### Using the Podcast Timer
+
+1. **Start Timer**: Click "▶️ Start" to begin the 30-minute countdown
+2. **Pause Timer**: Click "⏸️ Pause" to pause the countdown (button enabled only when timer is running)
+3. **Reset Timer**: Click "🔄 Reset" to reset the timer back to 30:00
+4. **Visual Warning**: Timer turns red and pulses when less than 5 minutes remain
+5. **Completion Alert**: An alert appears when the timer reaches 00:00
+
 ### Keyboard Shortcuts
 
 - **Space**: Stop currently playing audio (works when not focused on input fields)
+
+### Using Trending Actors
+
+1. **Load Trending Actors**: Click "🔥 Load Trending Actors" to fetch the latest trending actors
+2. **Random Actor**: Click "🎲 Random Trending Actor" to generate a random high-trending actor
+3. **Filter by Genre**: Use the genre dropdown to filter actors by movie genre
+4. **View Details**: See actor popularity scores and their known works
 
 ### During Recording
 
 1. Keep the dashboard open on a second monitor or device
 2. Click audio cards to trigger stings during recording
-3. Use keyboard shortcuts for quick control
-4. No latency - perfect for live podcast production
+3. Reference trending actors for podcast topics or games
+4. Use keyboard shortcuts for quick control
+5. No latency - perfect for live podcast production
 
 ## Browser Compatibility
 
@@ -98,12 +128,12 @@ pitch-off-dashboard/
 
 This dashboard is designed to be extensible. Planned features include:
 
-- **Movie Database Integration**: Integration with TMDb API for actor lookups
-- **Actor Search**: Find actors by name, category, or film type
-- **Filtering System**: A-list, B-list, horror specialists, etc.
+- **Actor Search**: Find specific actors by name
+- **Advanced Filtering**: A-list, B-list, horror specialists, etc.
 - **Favorites**: Save frequently used stings and actors
 - **Playlists**: Create sequences of audio stings
 - **Hotkeys**: Assign number keys to specific stings
+- **Enhanced Actor Details**: Show filmography and recent projects
 
 ## Contributing
 
