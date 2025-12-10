@@ -115,6 +115,51 @@
             background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
         }
 
+        .timer-button.mode {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        }
+
+        .timer-button.mode.auto-mode {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        }
+
+        .segment-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            font-size: 1.2em;
+            font-weight: bold;
+            animation: slideIn 0.3s ease-out, slideOut 0.3s ease-in 4.7s;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
         .dashboard {
             background: white;
             border-radius: 15px;
@@ -254,38 +299,7 @@
             display: block;
         }
 
-        .now-playing {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: none;
-        }
 
-        .now-playing.active {
-            display: block;
-        }
-
-        .now-playing h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            width: 0%;
-            transition: width 0.1s linear;
-        }
 
         .future-features {
             background: #f8f9fa;
@@ -441,20 +455,12 @@
                 <button class="timer-button start" id="startButton" onclick="startTimer()">▶️ Start</button>
                 <button class="timer-button pause" id="pauseButton" onclick="pauseTimer()" disabled>⏸️ Pause</button>
                 <button class="timer-button reset" id="resetButton" onclick="resetTimer()">🔄 Reset</button>
+                <button class="timer-button mode" id="modeButton" onclick="toggleTimerMode()">✋ Manual</button>
             </div>
+            <div id="selectedSegmentsDisplay" style="display: none;"></div>
         </div>
 
         <div class="dashboard">
-            <div class="section">
-                <h2>Now Playing</h2>
-                <div class="now-playing" id="nowPlaying">
-                    <h3 id="currentTrackName">No track playing</h3>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
-                </div>
-            </div>
-
             <div class="section">
                 <h2>Load Custom Audio</h2>
                 <div class="upload-section">
@@ -505,6 +511,8 @@
     </div>
 
     <!-- Load JavaScript modules -->
+    <script src="segments.ts"></script>
+    <script src="segment-actions.js"></script>
     <script src="timer.js"></script>
     <script src="audio.js"></script>
     <script src="api.js"></script>
