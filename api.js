@@ -92,8 +92,12 @@ async function loadTrendingActors() {
         const data = await response.json();
         
         if (data.results && data.results.length > 0) {
-            // Get 5 random actors from the results
-            const shuffled = [...data.results].sort(() => 0.5 - Math.random());
+            // Get 5 random actors from the results using Fisher-Yates shuffle
+            const shuffled = [...data.results];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
             const randomActors = shuffled.slice(0, 5);
             displayActors(randomActors);
         } else {

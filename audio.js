@@ -3,6 +3,14 @@ let audioElements = {};
 let currentlyPlaying = null;
 let customAudioFiles = [];
 
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Default audio stings (examples - these would be replaced with actual files)
 const defaultStings = [
     { id: 'intro', name: 'Intro Sting', description: 'Opening theme', file: null },
@@ -47,8 +55,8 @@ function createPlaceholderCard(sting) {
     card.className = 'audio-card';
     card.style.opacity = '0.6';
     card.innerHTML = `
-        <h3>${sting.name}</h3>
-        <p>${sting.description}</p>
+        <h3>${escapeHtml(sting.name)}</h3>
+        <p>${escapeHtml(sting.description)}</p>
         <button class="play-button" disabled>No Audio File</button>
     `;
     return card;
@@ -59,9 +67,9 @@ function createAudioCard(audio) {
     const card = document.createElement('div');
     card.className = 'audio-card';
     card.innerHTML = `
-        <h3>${audio.name}</h3>
-        <p>${audio.description}</p>
-        <button class="play-button" data-audio-id="${audio.id}" onclick="toggleAudio('${audio.id}')">▶ Play</button>
+        <h3>${escapeHtml(audio.name)}</h3>
+        <p>${escapeHtml(audio.description)}</p>
+        <button class="play-button" data-audio-id="${escapeHtml(audio.id)}" onclick="toggleAudio('${escapeHtml(audio.id)}')">▶ Play</button>
     `;
 
     // Create audio element

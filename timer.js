@@ -39,8 +39,6 @@ function startTimer() {
                 pauseTimer();
                 alert('⏱️ Timer complete! 30 minutes have elapsed.');
             }
-        } else {
-            pauseTimer();
         }
     }, 1000);
 }
