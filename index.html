@@ -458,6 +458,14 @@
                 <button class="timer-button mode" id="modeButton" onclick="toggleTimerMode()">✋ Manual</button>
             </div>
             <div id="selectedSegmentsDisplay" style="display: none;"></div>
+            
+            <!-- Manual Sting Triggers Section -->
+            <div id="manualStingsSection" style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                <h3 style="color: #667eea; margin-bottom: 15px;">🎵 Manual Sting Triggers</h3>
+                <div class="audio-grid" id="manualStingsGrid">
+                    <div class="loading-message">Loading stings...</div>
+                </div>
+            </div>
         </div>
 
         <div class="dashboard">
@@ -480,10 +488,10 @@
             </div>
 
             <div class="section tmdb-section">
-                <h2>🎬 Trending Actors (TMDb)</h2>
+                <h2>🎬 Popular Actors (TMDb)</h2>
                 
                 <div class="upload-section">
-                    <p style="margin-bottom: 10px; color: #666;">Enter your TMDb API Key to access trending actors data:</p>
+                    <p style="margin-bottom: 10px; color: #666;">Enter your TMDb API Key to access popular actors data:</p>
                     <div class="file-input-wrapper">
                         <input type="password" id="tmdbApiKey" class="api-key-input" placeholder="Enter TMDb API Key (e.g., from https://www.themoviedb.org/settings/api)">
                         <button class="add-button" onclick="saveTmdbApiKey()">Save Key</button>
@@ -496,14 +504,14 @@
 
                 <div id="tmdbContent" style="display: none;">
                     <div class="tmdb-controls">
-                        <button class="tmdb-button" onclick="loadTrendingActors()">🎲 Get 5 Random Trending Actors</button>
+                        <button class="tmdb-button" onclick="loadTrendingActors()">🎲 Get 5 Random Popular Actors</button>
                         <select class="genre-select" id="genreSelect" onchange="filterByGenre()">
                             <option value="">All Genres</option>
                         </select>
                     </div>
 
                     <div id="actorsContainer">
-                        <div class="loading-message">Click "Get 5 Random Trending Actors" to see random trending actors</div>
+                        <div class="loading-message">Click "Get 5 Random Popular Actors" to see random popular actors</div>
                     </div>
                 </div>
             </div>

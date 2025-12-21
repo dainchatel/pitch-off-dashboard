@@ -15,10 +15,10 @@ A lightweight, instant-play dashboard for managing podcast audio stings and prod
 - **Keyboard Shortcuts**: Press Space to stop playback instantly
 - **Responsive Design**: Works on desktop and mobile browsers
 - **No Installation Required**: Just open `index.html` in your browser
-- **🎬 TMDB Integration**: Access trending actors data from The Movie Database
-  - View list of top trending actors
-  - Generate random high trending actor
-  - Filter trending actors by genre
+- **🎬 TMDB Integration**: Access popular actors data from The Movie Database
+  - View list of top popular actors
+  - Generate random high popular actor
+  - Filter popular actors by genre
   - See actor popularity and known works
   - Environment variable support for API key
 
@@ -46,12 +46,12 @@ A lightweight, instant-play dashboard for managing podcast audio stings and prod
      <script>var TMDB_API_KEY = 'your_api_key_here';</script>
      <script src="path/to/dashboard.js"></script>
      ```
-   - **Option 2**: Enter your API key in the "Trending Actors (TMDb)" section and click "Save Key"
+   - **Option 2**: Enter your API key in the "Popular Actors (TMDb)" section and click "Save Key"
 
 5. **Start using**
    - Click any audio card to play the sting instantly
    - Press Space to stop playback
-   - Use trending actors data during podcast recording
+   - Use popular actors data during podcast recording
    - Use during podcast recording for smooth transitions
 
 ## Usage
@@ -82,10 +82,10 @@ You can add audio files in two ways:
 
 - **Space**: Stop currently playing audio (works when not focused on input fields)
 
-### Using Trending Actors
+### Using Popular Actors
 
-1. **Load Trending Actors**: Click "🔥 Load Trending Actors" to fetch the latest trending actors
-2. **Random Actor**: Click "🎲 Random Trending Actor" to generate a random high-trending actor
+1. **Load Popular Actors**: Click "🔥 Get 5 Random Popular Actors" to fetch the latest popular actors
+2. **Random Actor**: Click "🎲 Random Popular Actor" to generate a random high-popular actor
 3. **Filter by Genre**: Use the genre dropdown to filter actors by movie genre
 4. **View Details**: See actor popularity scores and their known works
 
@@ -93,7 +93,7 @@ You can add audio files in two ways:
 
 1. Keep the dashboard open on a second monitor or device
 2. Click audio cards to trigger stings during recording
-3. Reference trending actors for podcast topics or games
+3. Reference popular actors for podcast topics or games
 4. Use keyboard shortcuts for quick control
 5. No latency - perfect for live podcast production
 
