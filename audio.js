@@ -11,33 +11,14 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Default audio stings (examples - these would be replaced with actual files)
-const defaultStings = [
-    { id: 'intro', name: 'Intro Sting', description: 'Opening theme', file: null },
-    { id: 'transition', name: 'Transition', description: 'Segment transition', file: null },
-    { id: 'outro', name: 'Outro Sting', description: 'Closing theme', file: null },
-    { id: 'comedy', name: 'Comedy Beat', description: 'Funny moment sound', file: null },
-    { id: 'dramatic', name: 'Dramatic', description: 'Tension builder', file: null },
-    { id: 'applause', name: 'Applause', description: 'Audience reaction', file: null }
-];
+// Default stings removed - audio files now loaded from directory at runtime
 
 // Render audio cards
 function renderAudioCards() {
     const grid = document.getElementById('audioGrid');
     grid.innerHTML = '';
 
-    // Render default stings
-    defaultStings.forEach(sting => {
-        if (!sting.file) {
-            const card = createPlaceholderCard(sting);
-            grid.appendChild(card);
-        } else {
-            const card = createAudioCard(sting);
-            grid.appendChild(card);
-        }
-    });
-
-    // Render custom audio files
+    // Render custom audio files only
     customAudioFiles.forEach((audio, index) => {
         const card = createAudioCard({
             id: `custom-${index}`,
@@ -47,20 +28,14 @@ function renderAudioCards() {
         });
         grid.appendChild(card);
     });
+    
+    // Show message if no custom audio loaded
+    if (customAudioFiles.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #666; padding: 20px;">No custom audio files loaded. Add audio files using the upload button above.</div>';
+    }
 }
 
-// Create placeholder card for audio not yet loaded
-function createPlaceholderCard(sting) {
-    const card = document.createElement('div');
-    card.className = 'audio-card';
-    card.style.opacity = '0.6';
-    card.innerHTML = `
-        <h3>${escapeHtml(sting.name)}</h3>
-        <p>${escapeHtml(sting.description)}</p>
-        <button class="play-button" disabled>No Audio File</button>
-    `;
-    return card;
-}
+// Removed createPlaceholderCard - no longer needed
 
 // Create audio card
 function createAudioCard(audio) {
@@ -77,7 +52,6 @@ function createAudioCard(audio) {
         const audioElement = new Audio();
         audioElement.src = audio.file;
         audioElement.addEventListener('ended', () => onAudioEnded(audio.id));
-        audioElement.addEventListener('timeupdate', () => updateProgress(audio.id));
         audioElements[audio.id] = audioElement;
     }
 
@@ -112,7 +86,6 @@ function playAudio(id) {
 
     // Update UI
     updatePlayButton(id, true);
-    showNowPlaying(id);
 }
 
 // Stop audio
@@ -128,7 +101,6 @@ function stopAudio(id) {
     
     if (currentlyPlaying === id) {
         currentlyPlaying = null;
-        hideNowPlaying();
     }
 }
 
@@ -137,7 +109,6 @@ function onAudioEnded(id) {
     updatePlayButton(id, false);
     if (currentlyPlaying === id) {
         currentlyPlaying = null;
-        hideNowPlaying();
     }
 }
 
@@ -157,44 +128,7 @@ function updatePlayButton(id, isPlaying) {
     });
 }
 
-// Show now playing section
-function showNowPlaying(id) {
-    const nowPlaying = document.getElementById('nowPlaying');
-    const trackName = document.getElementById('currentTrackName');
-    
-    // Find audio name
-    let audioName = 'Unknown';
-    const defaultSting = defaultStings.find(s => s.id === id);
-    if (defaultSting) {
-        audioName = defaultSting.name;
-    } else {
-        const customIndex = parseInt(id.replace('custom-', ''));
-        if (!isNaN(customIndex) && customAudioFiles[customIndex]) {
-            audioName = customAudioFiles[customIndex].name;
-        }
-    }
-
-    trackName.textContent = audioName;
-    nowPlaying.classList.add('active');
-}
-
-// Hide now playing section
-function hideNowPlaying() {
-    const nowPlaying = document.getElementById('nowPlaying');
-    nowPlaying.classList.remove('active');
-    document.getElementById('progressFill').style.width = '0%';
-}
-
-// Update progress bar
-function updateProgress(id) {
-    if (currentlyPlaying !== id) return;
-
-    const audio = audioElements[id];
-    if (!audio) return;
-
-    const progress = (audio.currentTime / audio.duration) * 100;
-    document.getElementById('progressFill').style.width = `${progress}%`;
-}
+// Removed showNowPlaying, hideNowPlaying, and updateProgress - no longer needed without Now Playing section
 
 // Add custom audio
 function addCustomAudio() {
