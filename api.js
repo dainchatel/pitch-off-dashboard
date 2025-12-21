@@ -75,15 +75,15 @@ async function loadGenres() {
     }
 }
 
-// Load trending actors - now shows 5 random actors
+// Load popular actors - now shows 5 random actors
 async function loadTrendingActors() {
     const container = document.getElementById('actorsContainer');
-    container.innerHTML = '<div class="loading-message">Loading trending actors...</div>';
+    container.innerHTML = '<div class="loading-message">Loading popular actors...</div>';
     
     try {
         // Always fetch fresh data without caching
         const timestamp = new Date().getTime();
-        const response = await fetch(`${TMDB_BASE_URL}/trending/person/week?api_key=${tmdbApiKey}&_t=${timestamp}`);
+        const response = await fetch(`${TMDB_BASE_URL}/person/popular?api_key=${tmdbApiKey}&_t=${timestamp}`);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -101,12 +101,12 @@ async function loadTrendingActors() {
             const randomActors = shuffled.slice(0, 5);
             displayActors(randomActors);
         } else {
-            throw new Error('No trending actors found');
+            throw new Error('No popular actors found');
         }
     } catch (error) {
         const errorMsg = escapeHtml(error.message || 'Unknown error');
         container.innerHTML = `<div class="error-message">Error: ${errorMsg}. Please check your API key.</div>`;
-        console.error('Error loading trending actors:', error);
+        console.error('Error loading popular actors:', error);
     }
 }
 
@@ -209,5 +209,5 @@ function filterByGenre() {
     currentGenreFilter = genreSelect.value;
     
     // Just show a message that user needs to reload
-    showStatus('Please click "Load Trending Actors" to see filtered results', 'success', 'tmdbStatusMessage');
+    showStatus('Please click "Get 5 Random Popular Actors" to see filtered results', 'success', 'tmdbStatusMessage');
 }

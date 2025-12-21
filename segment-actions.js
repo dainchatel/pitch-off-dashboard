@@ -44,6 +44,9 @@ async function loadStingsFromDirectory() {
         }
         
         console.log('Loaded stings:', Object.keys(stingAudioFiles));
+        
+        // Render manual stings after loading
+        renderManualStings();
     } catch (error) {
         console.error('Error loading stings from directory:', error);
     }
@@ -104,7 +107,7 @@ function generateRandomActors(count = 5) {
         
         // Check if TMDB functions are available
         if (typeof loadTrendingActors === 'function') {
-            // Call the existing function to load trending actors
+            // Call the existing function to load popular actors
             loadTrendingActors();
         } else {
             console.warn('TMDB integration not available');
@@ -117,4 +120,55 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', loadStingsFromDirectory);
 } else {
     loadStingsFromDirectory();
+}
+
+// Render manual sting triggers in the timer section
+function renderManualStings() {
+    const grid = document.getElementById('manualStingsGrid');
+    if (!grid) {
+        console.warn('Manual stings grid not found');
+        return;
+    }
+    
+    const stingNames = Object.keys(stingAudioFiles);
+    
+    if (stingNames.length === 0) {
+        grid.innerHTML = '<div class="loading-message">No stings loaded yet...</div>';
+        return;
+    }
+    
+    grid.innerHTML = '';
+    
+    stingNames.forEach(stingName => {
+        const card = document.createElement('div');
+        card.className = 'audio-card';
+        
+        // Create a friendly display name
+        const displayName = stingName
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        
+        card.innerHTML = `
+            <h3>${displayName}</h3>
+            <p>Segment Sting</p>
+            <button class="play-button" onclick="playManualSting('${stingName}')">▶ Play</button>
+        `;
+        
+        grid.appendChild(card);
+    });
+}
+
+// Play a manual sting by name
+function playManualSting(stingName) {
+    if (!stingAudioFiles[stingName]) {
+        console.error('Sting not found:', stingName);
+        return;
+    }
+    
+    const audio = stingAudioFiles[stingName];
+    audio.currentTime = 0;
+    audio.play().catch(err => {
+        console.error('Error playing sting:', err);
+    });
 }
