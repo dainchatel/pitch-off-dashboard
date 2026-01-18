@@ -40,18 +40,33 @@ app.get('/api/tmdb/random-movie', async (req, res) => {
         const firstPageData = await firstPageResponse.json();
         const totalPages = Math.min(firstPageData.total_pages || 500, 500);
         
-        // Get a random page
-        const randomPage = Math.floor(Math.random() * totalPages) + 1;
-        const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&page=${randomPage}`);
-        const data = await response.json();
+        // Retry up to 5 times to find a movie with a poster
+        const maxRetries = 5;
+        let movie = null;
         
-        if (data.results && data.results.length > 0) {
-            // Pick a random movie from the page
-            const randomIndex = Math.floor(Math.random() * data.results.length);
-            const movie = data.results[randomIndex];
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+            // Get a random page
+            const randomPage = Math.floor(Math.random() * totalPages) + 1;
+            const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&page=${randomPage}`);
+            const data = await response.json();
+            
+            if (data.results && data.results.length > 0) {
+                // Filter for movies with posters
+                const moviesWithPosters = data.results.filter(m => m.poster_path && m.poster_path.trim() !== '');
+                
+                if (moviesWithPosters.length > 0) {
+                    // Pick a random movie from those with posters
+                    const randomIndex = Math.floor(Math.random() * moviesWithPosters.length);
+                    movie = moviesWithPosters[randomIndex];
+                    break; // Found a movie with a poster, exit retry loop
+                }
+            }
+        }
+        
+        if (movie) {
             res.json(movie);
         } else {
-            res.status(500).json({ error: 'No movies found' });
+            res.status(500).json({ error: 'No movies with posters found after retries' });
         }
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch random movie' });
