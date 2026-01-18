@@ -512,6 +512,64 @@
             border-radius: 5px;
             margin-bottom: 15px;
         }
+
+        .movie-card {
+            display: flex;
+            gap: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+        }
+
+        .movie-poster {
+            width: 200px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 5px;
+            background: #ddd;
+            flex-shrink: 0;
+        }
+
+        .movie-info {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .movie-title {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .movie-meta {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .movie-overview {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .movie-card {
+                flex-direction: column;
+            }
+            
+            .movie-poster {
+                width: 100%;
+                max-width: 300px;
+                height: auto;
+                aspect-ratio: 2/3;
+                margin: 0 auto;
+            }
+            
+            .movie-title {
+                font-size: 1.2em;
+            }
+        }
     </style>
 </head>
 <body>

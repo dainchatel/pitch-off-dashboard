@@ -223,12 +223,12 @@ function displayMovie(movie) {
     }
     
     container.innerHTML = `
-        <div class="movie-card" style="display: flex; gap: 20px; background: #f8f9fa; border-radius: 10px; padding: 20px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-            <img src="${escapeHtml(posterUrl)}" alt="${movieTitle}" style="width: 200px; height: 300px; object-fit: cover; border-radius: 5px; background: #ddd;" onerror="this.src='${NO_IMAGE_PLACEHOLDER}'">
-            <div style="flex: 1;">
-                <h3 style="color: #667eea; font-size: 1.5em; margin-bottom: 10px;">${movieTitle}</h3>
-                <p style="color: #666; margin-bottom: 10px;"><strong>Year:</strong> ${movieYear} | <strong>Rating:</strong> ⭐ ${movieRating}</p>
-                <p style="color: #333; line-height: 1.6;">${movieOverview}</p>
+        <div class="movie-card">
+            <img src="${escapeHtml(posterUrl)}" alt="${movieTitle}" class="movie-poster" onerror="this.src='${NO_IMAGE_PLACEHOLDER}'">
+            <div class="movie-info">
+                <h3 class="movie-title">${movieTitle}</h3>
+                <p class="movie-meta"><strong>Year:</strong> ${movieYear} | <strong>Rating:</strong> ⭐ ${movieRating}</p>
+                <p class="movie-overview">${movieOverview}</p>
             </div>
         </div>
     `;
