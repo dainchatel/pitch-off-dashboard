@@ -16,16 +16,8 @@ const segments = [
         action: [playOneSting("./audio/stings/meetings.wav"), generateRandomActors(5)],
     },
     {
-        name: "Trailer",
-        action: [function() { playManualSting('trailer'); }]
-    },
-    {
-        name: "Set Piece",
-        action: [function() { playManualSting('set-piece'); }]
-    },
-    {
-        name: "Emotional Core",
-        action: [function() { playManualSting('emotional-core'); }]
+        name: "Show Me a Scene",
+        action: [function() { playManualSting('show-me-a-scene'); }]
     },
     {
         name: "Studio Note",

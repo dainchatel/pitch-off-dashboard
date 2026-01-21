@@ -250,12 +250,14 @@
         }
 
         .audio-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            display: flex;
+            flex-wrap: wrap;
             gap: 20px;
+            justify-content: center;
         }
 
         .audio-card {
+            flex: 0 0 250px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 10px;
             padding: 20px;
@@ -570,6 +572,99 @@
                 font-size: 1.2em;
             }
         }
+
+        /* Scene Modal Styles */
+        .scene-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .scene-modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .scene-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .scene-modal-title {
+            font-size: 1.8em;
+            color: #667eea;
+            margin: 0;
+        }
+
+        .scene-modal-close {
+            background: none;
+            border: none;
+            font-size: 2em;
+            color: #666;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .scene-modal-close:hover {
+            background: #f0f0f0;
+        }
+
+        .scene-cards-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .scene-card {
+            flex: 0 0 150px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            padding: 20px;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, border 0.2s;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: 3px solid transparent;
+        }
+
+        .scene-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .scene-card:active {
+            transform: translateY(-2px);
+        }
+
+        .scene-card.playing {
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -602,42 +697,53 @@
             </div>
         </div>
 
-        <div class="dashboard">
-            <div class="section tmdb-section">
-                <h2>🎬 Popular Actors</h2>
-                
-                <div id="tmdbContent" style="display: none;">
-                    <div class="tmdb-controls">
-                        <button class="tmdb-button" onclick="loadTrendingActors()">🎲 Get Random Actors</button>
-                    </div>
+    </div>
 
-                    <div id="actorsContainer">
-                        <div class="loading-message">Click "Get Random Actors" to see random actors</div>
-                    </div>
-                </div>
-                
-                <div id="tmdbNoKey" style="display: none;">
-                    <p style="color: #666; padding: 20px; text-align: center;">
-                        TMDb API key not configured. Set <code>TMDB_API_KEY</code> as an environment variable to use this feature.
-                    </p>
-                </div>
+    <!-- Scene Modal -->
+    <div id="sceneModal" class="scene-modal" onclick="if(event.target.id === 'sceneModal') closeSceneModal()">
+        <div class="scene-modal-content">
+            <div class="scene-modal-header">
+                <h2 class="scene-modal-title">Select Scene Type</h2>
+                <button class="scene-modal-close" onclick="closeSceneModal()">×</button>
             </div>
+            <div class="scene-cards-grid">
+                <div class="scene-card" onclick="selectSceneType('emotional')">Emotional</div>
+                <div class="scene-card" onclick="selectSceneType('action')">Action</div>
+                <div class="scene-card" onclick="selectSceneType('trailer')">Trailer</div>
+                <div class="scene-card" onclick="selectSceneType('comedic')">Comedic</div>
+                <div class="scene-card" onclick="selectSceneType('gloomy')">Gloomy</div>
+            </div>
+        </div>
+    </div>
 
-            <div class="section">
-                <h2>📝 Studio Note</h2>
-                <div id="studioNoteContent" style="display: none;">
-                    <div class="tmdb-controls">
-                        <button class="tmdb-button" onclick="loadRandomMovie()">🎬 Get Random Movie</button>
-                    </div>
-                    <div id="movieContainer" style="margin-top: 20px;">
-                        <div class="loading-message">Click "Get Random Movie" to see a random movie</div>
-                    </div>
-                </div>
-                <div id="studioNoteNoKey" style="display: none;">
-                    <p style="color: #666; padding: 20px; text-align: center;">
-                        TMDb API key not configured. Set <code>TMDB_API_KEY</code> as an environment variable to use this feature.
-                    </p>
-                </div>
+    <!-- Casting Modal -->
+    <div id="castingModal" class="scene-modal" onclick="if(event.target.id === 'castingModal') closeCastingModal()">
+        <div class="scene-modal-content" style="max-width: 800px;">
+            <div class="scene-modal-header">
+                <h2 class="scene-modal-title">🎬 Casting</h2>
+                <button class="scene-modal-close" onclick="closeCastingModal()">×</button>
+            </div>
+            <div id="actorsContainer">
+                <div class="loading-message">Loading actors...</div>
+            </div>
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="tmdb-button" onclick="loadTrendingActors()" style="margin-top: 20px;">🎲 Get Another Cast</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Studio Note Modal -->
+    <div id="studioNoteModal" class="scene-modal" onclick="if(event.target.id === 'studioNoteModal') closeStudioNoteModal()">
+        <div class="scene-modal-content" style="max-width: 800px;">
+            <div class="scene-modal-header">
+                <h2 class="scene-modal-title">📝 Studio Note</h2>
+                <button class="scene-modal-close" onclick="closeStudioNoteModal()">×</button>
+            </div>
+            <div id="studioNoteContainer">
+                <div class="loading-message">Loading studio note...</div>
+            </div>
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="tmdb-button" onclick="loadRandomMovie()" style="margin-top: 20px;">🎲 Get Another Studio Note</button>
             </div>
         </div>
     </div>

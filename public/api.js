@@ -3,54 +3,44 @@ let currentGenreFilter = '';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w185';
 const NO_IMAGE_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="120" viewBox="0 0 80 120"%3E%3Crect fill="%23ddd" width="80" height="120"/%3E%3Ctext x="50%25" y="50%25" font-size="14" fill="%23999" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
 
-// Initialize TMDB section
+// Initialize TMDB section (no longer needed for UI, but keeping for API key check)
 async function initTmdb() {
-    const tmdbContent = document.getElementById('tmdbContent');
-    const tmdbNoKey = document.getElementById('tmdbNoKey');
-    const studioNoteContent = document.getElementById('studioNoteContent');
-    const studioNoteNoKey = document.getElementById('studioNoteNoKey');
-    
-    if (!tmdbContent || !tmdbNoKey) {
-        console.error('TMDb elements not found');
-        return;
-    }
-    
-    // Check if server is available by trying to load genres
+    // Just check if API is available - no UI elements to show/hide anymore
     try {
         const response = await fetch('/api/tmdb/genres');
-        if (response.ok) {
-            const data = await response.json();
-            // Check if we got an error response
-            if (data.error) {
-                tmdbContent.style.display = 'none';
-                tmdbNoKey.style.display = 'block';
-                if (studioNoteContent) studioNoteContent.style.display = 'none';
-                if (studioNoteNoKey) studioNoteNoKey.style.display = 'block';
-            } else {
-                tmdbContent.style.display = 'block';
-                tmdbNoKey.style.display = 'none';
-                if (studioNoteContent) studioNoteContent.style.display = 'block';
-                if (studioNoteNoKey) studioNoteNoKey.style.display = 'none';
-            }
-        } else {
-            tmdbContent.style.display = 'none';
-            tmdbNoKey.style.display = 'block';
-            if (studioNoteContent) studioNoteContent.style.display = 'none';
-            if (studioNoteNoKey) studioNoteNoKey.style.display = 'block';
+        if (!response.ok) {
+            console.warn('TMDb API key not configured');
         }
     } catch (error) {
-        console.error('Error initializing TMDb:', error);
-        tmdbContent.style.display = 'none';
-        tmdbNoKey.style.display = 'block';
-        if (studioNoteContent) studioNoteContent.style.display = 'none';
-        if (studioNoteNoKey) studioNoteNoKey.style.display = 'block';
+        console.error('Error checking TMDb API:', error);
     }
 }
 
 
+// Open casting modal
+function openCastingModal() {
+    const modal = document.getElementById('castingModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+// Close casting modal
+function closeCastingModal() {
+    const modal = document.getElementById('castingModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
 // Load popular actors - shows up to 9 actors (server already shuffles them)
 async function loadTrendingActors() {
+    // Open the modal (or keep it open if already open)
+    openCastingModal();
+    
     const container = document.getElementById('actorsContainer');
+    if (!container) return;
+    
     container.innerHTML = '<div class="loading-message">Loading popular actors...</div>';
     
     try {
@@ -178,31 +168,125 @@ function filterByGenre() {
     showStatus('Please click "Get 5 Random Popular Actors" to see filtered results', 'success', 'tmdbStatusMessage');
 }
 
-// Load random movie for Studio Note
-async function loadRandomMovie() {
-    const container = document.getElementById('movieContainer');
-    container.innerHTML = '<div class="loading-message">Loading random movie...</div>';
-    
-    try {
-        const response = await fetch('/api/tmdb/random-movie');
-        
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+// Studio note templates
+// Movie note appears 5 times to make it much more frequent
+const STUDIO_NOTES = [
+    { type: 'movie', text: 'Can we make it more like [RANDOM MOVIE]?' },
+    { type: 'movie', text: 'Can we make it more like [RANDOM MOVIE]?' },
+    { type: 'movie', text: 'Can we make it more like [RANDOM MOVIE]?' },
+    { type: 'movie', text: 'Can we make it more like [RANDOM MOVIE]?' },
+    { type: 'movie', text: 'Can we make it more like [RANDOM MOVIE]?' },
+    { type: 'demo', text: 'Can we make it play with [RANDOM DEMO]?' },
+    { type: 'rating', text: 'Can we make it rated [RANDOM RATING]?' },
+    { type: 'simple', text: 'We think it could be a franchise. Can you pitch movies two and three?' },
+    { type: 'simple', text: 'Can we fit this into existing IP?' },
+    { type: 'simple', text: 'We need a viral marketing play—any ideas?' }
+];
+
+// Rare studio notes (appear less frequently)
+const RARE_STUDIO_NOTES = [
+    { type: 'simple', text: 'Can you make it animated?' }
+];
+
+const DEMOS = [
+    'Four-quadrant',
+    'Date-night',
+    'Oscar crowd',
+    'Families',
+    'Gen Z',
+    'Millennials',
+    'Older adults (45+)',
+    'Streaming-first audience'
+];
+
+const RATINGS = ['G', 'PG', 'PG-13', 'R', 'NC-17'];
+
+// Studio note modal state
+let studioNoteAutoCloseTimer = null;
+
+// Open studio note modal
+function openStudioNoteModal() {
+    const modal = document.getElementById('studioNoteModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        // Clear any existing timer
+        if (studioNoteAutoCloseTimer) {
+            clearTimeout(studioNoteAutoCloseTimer);
         }
-        
-        const movie = await response.json();
-        displayMovie(movie);
-    } catch (error) {
-        const errorMsg = escapeHtml(error.message || 'Unknown error');
-        container.innerHTML = `<div class="error-message">Error: ${errorMsg}</div>`;
-        console.error('Error loading random movie:', error);
+        // Auto-close after 30 seconds
+        studioNoteAutoCloseTimer = setTimeout(() => {
+            closeStudioNoteModal();
+        }, 30000);
     }
 }
 
-// Display movie
-function displayMovie(movie) {
-    const container = document.getElementById('movieContainer');
+// Close studio note modal
+function closeStudioNoteModal() {
+    const modal = document.getElementById('studioNoteModal');
+    if (modal) {
+        modal.style.display = 'none';
+        // Clear auto-close timer
+        if (studioNoteAutoCloseTimer) {
+            clearTimeout(studioNoteAutoCloseTimer);
+            studioNoteAutoCloseTimer = null;
+        }
+    }
+}
+
+// Load random studio note
+async function loadRandomMovie() {
+    // Open the modal (or keep it open if already open)
+    openStudioNoteModal();
+    
+    const container = document.getElementById('studioNoteContainer');
+    if (!container) return;
+    
+    container.innerHTML = '<div class="loading-message">Loading studio note...</div>';
+    
+    try {
+        // 10% chance to pick from rare notes, otherwise pick from regular notes
+        let randomNote;
+        if (Math.random() < 0.1 && RARE_STUDIO_NOTES.length > 0) {
+            randomNote = RARE_STUDIO_NOTES[Math.floor(Math.random() * RARE_STUDIO_NOTES.length)];
+        } else {
+            randomNote = STUDIO_NOTES[Math.floor(Math.random() * STUDIO_NOTES.length)];
+        }
+        
+        if (randomNote.type === 'movie') {
+            // Fetch a movie and display with the note
+            const response = await fetch('/api/tmdb/random-movie');
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+            }
+            
+            const movie = await response.json();
+            displayStudioNoteWithMovie(randomNote.text, movie);
+        } else if (randomNote.type === 'demo') {
+            // Pick a random demo
+            const randomDemo = DEMOS[Math.floor(Math.random() * DEMOS.length)];
+            const noteText = randomNote.text.replace('[RANDOM DEMO]', randomDemo);
+            displaySimpleStudioNote(noteText);
+        } else if (randomNote.type === 'rating') {
+            // Pick a random rating
+            const randomRating = RATINGS[Math.floor(Math.random() * RATINGS.length)];
+            const noteText = randomNote.text.replace('[RANDOM RATING]', randomRating);
+            displaySimpleStudioNote(noteText);
+        } else {
+            // Simple note, just display the text
+            displaySimpleStudioNote(randomNote.text);
+        }
+    } catch (error) {
+        const errorMsg = escapeHtml(error.message || 'Unknown error');
+        container.innerHTML = `<div class="error-message">Error: ${errorMsg}</div>`;
+        console.error('Error loading studio note:', error);
+    }
+}
+
+// Display studio note with movie
+function displayStudioNoteWithMovie(noteTemplate, movie) {
+    const container = document.getElementById('studioNoteContainer');
     
     if (!movie) {
         container.innerHTML = '<div class="loading-message">No movie found</div>';
@@ -222,7 +306,12 @@ function displayMovie(movie) {
         }
     }
     
+    const noteText = noteTemplate.replace('[RANDOM MOVIE]', movieTitle);
+    
     container.innerHTML = `
+        <div class="studio-note-text" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; margin-bottom: 20px; border-radius: 5px; font-size: 1.2em; font-weight: bold; color: #856404;">
+            ${escapeHtml(noteText)}
+        </div>
         <div class="movie-card">
             <img src="${escapeHtml(posterUrl)}" alt="${movieTitle}" class="movie-poster" onerror="this.src='${NO_IMAGE_PLACEHOLDER}'">
             <div class="movie-info">
@@ -230,6 +319,17 @@ function displayMovie(movie) {
                 <p class="movie-meta"><strong>Year:</strong> ${movieYear} | <strong>Rating:</strong> ⭐ ${movieRating}</p>
                 <p class="movie-overview">${movieOverview}</p>
             </div>
+        </div>
+    `;
+}
+
+// Display simple studio note (no movie)
+function displaySimpleStudioNote(noteText) {
+    const container = document.getElementById('studioNoteContainer');
+    
+    container.innerHTML = `
+        <div class="studio-note-text" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; border-radius: 5px; font-size: 1.2em; font-weight: bold; color: #856404;">
+            ${escapeHtml(noteText)}
         </div>
     `;
 }

@@ -35,19 +35,32 @@ app.get('/api/tmdb/random-movie', async (req, res) => {
     }
     
     try {
-        // Get total pages for popular movies
-        const firstPageResponse = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&page=1`);
+        // Randomly choose between popular, now_playing, and top_rated
+        const endpoints = [
+            { type: 'popular', minPage: 3, maxPage: 50 },
+            { type: 'now_playing', minPage: 2, maxPage: 5 },
+            { type: 'top_rated', minPage: 3, maxPage: 50 }
+        ];
+        
+        const selectedEndpoint = endpoints[Math.floor(Math.random() * endpoints.length)];
+        
+        // Get first page to check total pages available
+        const firstPageResponse = await fetch(`https://api.themoviedb.org/3/movie/${selectedEndpoint.type}?api_key=${TMDB_API_KEY}&page=1`);
         const firstPageData = await firstPageResponse.json();
-        const totalPages = Math.min(firstPageData.total_pages || 500, 500);
+        const totalPages = firstPageData.total_pages || 1;
+        
+        // Determine the actual page range (don't exceed available pages)
+        const maxPage = Math.min(selectedEndpoint.maxPage, totalPages);
+        const minPage = Math.min(selectedEndpoint.minPage, maxPage);
         
         // Retry up to 5 times to find a movie with a poster
         const maxRetries = 5;
         let movie = null;
         
         for (let attempt = 0; attempt < maxRetries; attempt++) {
-            // Get a random page
-            const randomPage = Math.floor(Math.random() * totalPages) + 1;
-            const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&page=${randomPage}`);
+            // Get a random page within the range
+            const randomPage = Math.floor(Math.random() * (maxPage - minPage + 1)) + minPage;
+            const response = await fetch(`https://api.themoviedb.org/3/movie/${selectedEndpoint.type}?api_key=${TMDB_API_KEY}&page=${randomPage}`);
             const data = await response.json();
             
             if (data.results && data.results.length > 0) {

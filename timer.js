@@ -5,6 +5,9 @@ let timerRunning = false;
 let timerMode = 'manual'; // 'manual' or 'automatic'
 let selectedSegments = { 20: null, 10: null }; // Segments for 20 and 10 minute marks
 let triggeredSegments = { 20: false, 10: false }; // Track which segments have been triggered
+let segmentRevealState = { 20: false, 10: false }; // Track reveal state for display
+let segmentSwapState = { 20: false, 10: false }; // Track swap mode per slot
+let swapTargetMinute = null; // Which slot is currently swapping (20 or 10)
 
 // Constants
 const SEGMENT_NOTIFICATION_DURATION = 5000; // milliseconds
@@ -68,6 +71,10 @@ function resetTimer() {
     updateTimerDisplay();
     // Reset triggered segments
     triggeredSegments = { 20: false, 10: false };
+    // Reset reveal/swap states
+    segmentRevealState = { 20: false, 10: false };
+    segmentSwapState = { 20: false, 10: false };
+    swapTargetMinute = null;
 }
 
 // Toggle between manual and automatic mode
@@ -100,6 +107,11 @@ function selectRandomSegments() {
     
     selectedSegments[20] = shuffled[0];
     selectedSegments[10] = shuffled[1] || shuffled[0]; // Fallback to first if only one segment
+    
+    // Reset reveal state when new selections are made
+    segmentRevealState = { 20: false, 10: false };
+    segmentSwapState = { 20: false, 10: false };
+    swapTargetMinute = null;
 }
 
 // Check and trigger segments at specific countdown times
@@ -157,39 +169,88 @@ function showSelectedSegments() {
     const container = document.getElementById('selectedSegmentsDisplay');
     if (!container) return;
     
-    const segment20Name = selectedSegments[20] ? selectedSegments[20].name : 'None';
-    const segment10Name = selectedSegments[10] ? selectedSegments[10].name : 'None';
-    
     container.style.display = 'block';
     container.innerHTML = `
         <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
-            <strong>🎲 Automatic Mode Segments:</strong><br>
-            <div style="margin-top: 10px;">
-                <span style="color: #667eea;">📍 20:00</span> - <span id="segment-20-name" class="segment-name-container" data-name="${segment20Name}" data-revealed="false" onclick="toggleSegmentReveal(20, event)"><button style="background: #667eea; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85em;">Click to reveal</button></span>
-            </div>
-            <div style="margin-top: 5px;">
-                <span style="color: #667eea;">📍 10:00</span> - <span id="segment-10-name" class="segment-name-container" data-name="${segment10Name}" data-revealed="false" onclick="toggleSegmentReveal(10, event)"><button style="background: #667eea; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85em;">Click to reveal</button></span>
+            <div style="text-align: center; font-weight: bold; margin-bottom: 8px;">🎲 Automatic Mode Segments:</div>
+            <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
+                ${renderSegmentRow(20, '📍 20:00')}
+                ${renderSegmentRow(10, '📍 10:00')}
             </div>
         </div>
     `;
 }
 
-// Toggle segment name reveal
-function toggleSegmentReveal(minuteMark, event) {
-    event.stopPropagation();
-    const element = document.getElementById(`segment-${minuteMark}-name`);
-    if (!element) return;
+// Render a single segment row (names only)
+function renderSegmentRow(minuteMark, label) {
+    const isRevealed = segmentRevealState[minuteMark];
+    const isSwapping = segmentSwapState[minuteMark];
+    const segment = selectedSegments[minuteMark];
+    const name = segment ? segment.name : 'None';
+    const maskedName = 'Single Segment';
+    const swapColor = isSwapping ? '#17a2b8' : '#667eea';
+    const swapTextColor = 'white';
     
-    const isRevealed = element.getAttribute('data-revealed') === 'true';
-    const segmentName = element.getAttribute('data-name');
-    
-    if (isRevealed) {
-        element.innerHTML = '<button style="background: #667eea; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85em;">Click to reveal</button>';
-        element.setAttribute('data-revealed', 'false');
+    return `
+        <div style="margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 12px; min-width: 420px;">
+            <span style="color: #667eea;">${label}</span>
+            <span
+                style="color: #333; font-weight: 500; ${isRevealed ? '' : 'filter: blur(5px);'} transition: filter 0.2s;"
+            >
+                ${isRevealed ? name : maskedName}
+            </span>
+            <span style="display: inline-flex; align-items: center; gap: 8px; margin-left: 12px;">
+                <button
+                    style="background: #667eea; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85em; width: 70px; text-align: center;"
+                    onclick="${isRevealed ? `hideSegment(${minuteMark})` : `revealSegment(${minuteMark})`}"
+                >
+                    ${isRevealed ? 'Hide' : 'Reveal'}
+                </button>
+                <button
+                    style="background: ${swapColor}; color: ${swapTextColor}; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85em; width: 70px; text-align: center;"
+                    onclick="toggleSwapMode(${minuteMark})"
+                >
+                    Swap
+                </button>
+            </span>
+        </div>
+    `;
+}
+
+function revealSegment(minuteMark) {
+    segmentRevealState[minuteMark] = true;
+    showSelectedSegments();
+}
+
+function hideSegment(minuteMark) {
+    segmentRevealState[minuteMark] = false;
+    showSelectedSegments();
+}
+
+// Swap handler (no-op for now)
+function toggleSwapMode(minuteMark) {
+    const currentlyOn = segmentSwapState[minuteMark];
+    segmentSwapState = { 20: false, 10: false };
+    if (currentlyOn) {
+        swapTargetMinute = null;
     } else {
-        element.innerHTML = `<span style="color: #333;">${segmentName}</span>`;
-        element.setAttribute('data-revealed', 'true');
+        segmentSwapState[minuteMark] = true;
+        swapTargetMinute = minuteMark;
     }
+    showSelectedSegments();
+}
+
+// Handle selecting a segment from tiles when in swap mode
+function handleSwapSelect(segmentName) {
+    if (swapTargetMinute === null || !segments || !Array.isArray(segments)) return false;
+    const found = segments.find(seg => seg.name === segmentName);
+    if (!found) return false;
+    selectedSegments[swapTargetMinute] = found;
+    // Keep reveal state as-is (stays blurred until user reveals again)
+    segmentSwapState = { 20: false, 10: false };
+    swapTargetMinute = null;
+    showSelectedSegments();
+    return true;
 }
 
 // Hide selected segments display
