@@ -27,7 +27,8 @@ async function loadStingsFromDirectory() {
         // New stings that use placeholder.wav
         const placeholderStings = [
             'show-me-a-scene',
-            'studio-note'
+            'studio-note',
+            'viral-marketing'
         ];
         
         // Load each audio file
@@ -195,6 +196,8 @@ function renderManualStings() {
             displayName = 'Show Me a Scene';
         } else if (stingName === 'studio-note') {
             displayName = 'Studio Note';
+        } else if (stingName === 'viral-marketing') {
+            displayName = 'Viral Marketing';
         }
         
         card.innerHTML = `
@@ -321,6 +324,7 @@ function updateStingCards() {
 // Scene modal functions
 let currentSceneAudio = null;
 let selectedSceneCard = null;
+let currentlyPlayingSceneType = null;
 
 function openSceneModal() {
     const modal = document.getElementById('sceneModal');
@@ -334,8 +338,10 @@ function openSceneModal() {
         // Stop any currently playing scene audio
         if (currentSceneAudio) {
             currentSceneAudio.pause();
+            currentSceneAudio.currentTime = 0;
             currentSceneAudio = null;
         }
+        currentlyPlayingSceneType = null;
     }
 }
 
@@ -351,57 +357,90 @@ function closeSceneModal() {
         // Stop any playing audio
         if (currentSceneAudio) {
             currentSceneAudio.pause();
+            currentSceneAudio.currentTime = 0;
             currentSceneAudio = null;
         }
+        currentlyPlayingSceneType = null;
     }
 }
 
 function selectSceneType(sceneType) {
+    // Map sceneType to display names and audio files
+    const sceneTypeMap = {
+        'emotional': { display: 'Emotional', audio: 'heartfelt.wav' },
+        'action': { display: 'Action', audio: 'action.wav' },
+        'trailer': { display: 'Trailer', audio: 'trailer.wav' },
+        'comedic': { display: 'Comedic', audio: 'whimsical.wav' },
+        'gloomy': { display: 'Gloomy', audio: 'gloomy.wav' }
+    };
+    
+    const sceneInfo = sceneTypeMap[sceneType] || { display: sceneType, audio: 'placeholder.wav' };
+    const displayName = sceneInfo.display;
+    
+    // Find the clicked card
+    const sceneCards = document.querySelectorAll('.scene-card');
+    let clickedCard = null;
+    sceneCards.forEach(card => {
+        if (card.textContent.trim() === displayName) {
+            clickedCard = card;
+        }
+    });
+    
+    // If clicking the same scene type that's playing, stop it
+    if (currentlyPlayingSceneType === sceneType && currentSceneAudio) {
+        currentSceneAudio.pause();
+        currentSceneAudio.currentTime = 0;
+        currentSceneAudio = null;
+        currentlyPlayingSceneType = null;
+        if (selectedSceneCard) {
+            selectedSceneCard.classList.remove('playing');
+            selectedSceneCard = null;
+        }
+        return;
+    }
+    
     // Remove previous selection
     if (selectedSceneCard) {
         selectedSceneCard.classList.remove('playing');
     }
     
-    // Map sceneType to display names
-    const sceneTypeMap = {
-        'emotional': 'Emotional',
-        'action': 'Action',
-        'trailer': 'Trailer',
-        'comedic': 'Comedic',
-        'gloomy': 'Gloomy'
-    };
-    
-    const displayName = sceneTypeMap[sceneType] || sceneType;
-    
-    // Find and highlight the selected card
-    const sceneCards = document.querySelectorAll('.scene-card');
-    sceneCards.forEach(card => {
-        if (card.textContent.trim() === displayName) {
-            card.classList.add('playing');
-            selectedSceneCard = card;
-        }
-    });
-    
     // Stop any currently playing audio
     if (currentSceneAudio) {
         currentSceneAudio.pause();
+        currentSceneAudio.currentTime = 0;
     }
     
-    // Play placeholder sound
-    const audio = new Audio('./audio/stings/placeholder.wav');
-    currentSceneAudio = audio;
+    // Highlight the selected card
+    if (clickedCard) {
+        clickedCard.classList.add('playing');
+        selectedSceneCard = clickedCard;
+    }
     
-    // Set up ended event listener to close modal when sound finishes
+    // Play the appropriate audio file
+    const audio = new Audio(`./audio/stings/${sceneInfo.audio}`);
+    currentSceneAudio = audio;
+    currentlyPlayingSceneType = sceneType;
+    
+    // Set up ended event listener (no auto-close)
     const onEnded = () => {
-        closeSceneModal();
         audio.removeEventListener('ended', onEnded);
         currentSceneAudio = null;
+        currentlyPlayingSceneType = null;
+        if (selectedSceneCard) {
+            selectedSceneCard.classList.remove('playing');
+            selectedSceneCard = null;
+        }
     };
     audio.addEventListener('ended', onEnded);
     
     audio.play().catch(err => {
         console.error('Error playing scene sound:', err);
-        // If play fails, close modal anyway
-        closeSceneModal();
+        currentSceneAudio = null;
+        currentlyPlayingSceneType = null;
+        if (selectedSceneCard) {
+            selectedSceneCard.classList.remove('playing');
+            selectedSceneCard = null;
+        }
     });
 }
+

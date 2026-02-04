@@ -22,5 +22,9 @@ const segments = [
     {
         name: "Studio Note",
         action: [playOneSting("./audio/stings/placeholder.wav"), generateRandomMovie()],
+    },
+    {
+        name: "Viral Marketing",
+        action: [function() { playManualSting('viral-marketing'); }]
     }
 ]
