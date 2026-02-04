@@ -665,6 +665,38 @@
             border: 3px solid #ffd700;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
         }
+
+        .studio-notes-list {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .studio-notes-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .studio-notes-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .studio-notes-list::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .studio-notes-list::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .studio-note-item {
+            margin-bottom: 30px;
+        }
+
+        .studio-note-item:last-child {
+            margin-bottom: 0;
+        }
     </style>
 </head>
 <body>
@@ -736,14 +768,14 @@
     <div id="studioNoteModal" class="scene-modal" onclick="if(event.target.id === 'studioNoteModal') closeStudioNoteModal()">
         <div class="scene-modal-content" style="max-width: 800px;">
             <div class="scene-modal-header">
-                <h2 class="scene-modal-title">📝 Studio Note</h2>
+                <h2 class="scene-modal-title">📝 Studio Notes</h2>
                 <button class="scene-modal-close" onclick="closeStudioNoteModal()">×</button>
             </div>
             <div id="studioNoteContainer">
-                <div class="loading-message">Loading studio note...</div>
+                <div class="loading-message">Loading studio notes...</div>
             </div>
             <div style="margin-top: 20px; text-align: center;">
-                <button class="tmdb-button" onclick="loadRandomMovie()" style="margin-top: 20px;">🎲 Get Another Studio Note</button>
+                <button class="tmdb-button" onclick="loadRandomMovie()" style="margin-top: 20px;">🎲 Get Another Set of Studio Notes</button>
             </div>
         </div>
     </div>
