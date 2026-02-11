@@ -38,6 +38,7 @@ async function loadStingsFromDirectory() {
                 // Create audio element and preload
                 const audio = new Audio(path);
                 audio.preload = 'auto';
+                audio.volume = 0.05; // Set volume to 5%
                 
                 // Store by filename (without extension)
                 const name = getFilenameWithoutExtension(filename);
@@ -56,6 +57,7 @@ async function loadStingsFromDirectory() {
                 // Create a new Audio instance for each sting (can't share the same instance)
                 const audio = new Audio(placeholderPath);
                 audio.preload = 'auto';
+                audio.volume = 0.05; // Set volume to 5%
                 stingAudioFiles[stingName] = audio;
                 console.log(`Loaded sting: ${stingName} (using placeholder)`);
             } catch (err) {
@@ -84,6 +86,7 @@ function playOneSting(stingPath) {
         if (stingAudioFiles[filename]) {
             const audio = stingAudioFiles[filename];
             audio.currentTime = 0;
+            audio.volume = 0.05; // Set volume to 5%
             audio.play().catch(err => {
                 console.error('Error playing sting:', err);
             });
@@ -91,6 +94,7 @@ function playOneSting(stingPath) {
             // Fallback: try to create and play audio element
             try {
                 const audio = new Audio(stingPath);
+                audio.volume = 0.05; // Set volume to 5%
                 audio.play().catch(err => {
                     console.error('Error playing sting:', err);
                 });
@@ -241,6 +245,7 @@ function playManualSting(stingName) {
     
     const audio = stingAudioFiles[stingName];
     audio.currentTime = 0;
+    audio.volume = 0.05; // Set volume to 5%
     
     // Set up ended event listener
     const onEnded = () => {
@@ -418,6 +423,7 @@ function selectSceneType(sceneType) {
     
     // Play the appropriate audio file
     const audio = new Audio(`./audio/stings/${sceneInfo.audio}`);
+    audio.volume = 0.05; // Set volume to 5%
     currentSceneAudio = audio;
     currentlyPlayingSceneType = sceneType;
     
