@@ -24,9 +24,70 @@
         }
 
         header {
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             color: white;
             padding: 30px 0;
+        }
+
+        .header-spacer {
+            width: 200px;
+            flex-shrink: 0;
+        }
+
+        header .header-title {
+            flex: 1;
+            text-align: center;
+            min-width: 0;
+        }
+
+        .pitch-length-toggle-wrap {
+            width: 200px;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .pitch-length-btns {
+            display: flex;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            height: 50px;
+        }
+
+        .pitch-length-btn {
+            width: 66px;
+            border: none;
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .pitch-length-btn:first-child {
+            border-radius: 25px 0 0 25px;
+        }
+
+        .pitch-length-btn:last-child {
+            border-radius: 0 25px 25px 0;
+        }
+
+        .pitch-length-btn.active {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        }
+
+        .pitch-length-btn:hover:not(.active):not(:disabled) {
+            background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+        }
+
+        .pitch-length-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         header h1 {
@@ -135,7 +196,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
             transition: 0.3s;
             border-radius: 25px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -159,7 +220,7 @@
         }
 
         .mode-toggle input:checked + .toggle-slider {
-            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
         }
 
         .mode-toggle input:checked + .toggle-slider:before {
@@ -666,6 +727,22 @@
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
         }
 
+        .scene-progress-container {
+            display: none;
+            margin-top: 20px;
+            border-radius: 4px;
+            overflow: hidden;
+            min-height: 56px;
+        }
+
+        .scene-progress-container.visible {
+            display: block;
+        }
+
+        .scene-progress-container wave {
+            border-radius: 4px;
+        }
+
         .studio-notes-list {
             max-height: 500px;
             overflow-y: auto;
@@ -702,7 +779,17 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎙️ Pitch-Off Podcast Dashboard</h1>
+            <div class="header-spacer" aria-hidden="true"></div>
+            <div class="header-title">
+                <h1>🎙️ Pitch-Off Podcast Dashboard</h1>
+            </div>
+            <div class="pitch-length-toggle-wrap">
+                <div class="pitch-length-btns" title="Pitch length: 15, 25, or 30 minutes">
+                    <button type="button" class="pitch-length-btn" data-mode="mini" onclick="setPitchLengthMode('mini')">15</button>
+                    <button type="button" class="pitch-length-btn" data-mode="mid" onclick="setPitchLengthMode('mid')">25</button>
+                    <button type="button" class="pitch-length-btn active" data-mode="standard" onclick="setPitchLengthMode('standard')">30</button>
+                </div>
+            </div>
         </header>
 
         <div class="timer-section">
@@ -714,8 +801,8 @@
                 <label class="mode-toggle">
                     <input type="checkbox" id="modeToggle" onchange="toggleTimerMode()">
                     <span class="toggle-slider">
-                        <span class="toggle-label-left">✋</span>
-                        <span class="toggle-label-right">🤖</span>
+                        <span class="toggle-label-left">🤖</span>
+                        <span class="toggle-label-right">✋</span>
                     </span>
                 </label>
             </div>
@@ -744,6 +831,9 @@
                 <div class="scene-card" onclick="selectSceneType('trailer')">Trailer</div>
                 <div class="scene-card" onclick="selectSceneType('comedic')">Comedic</div>
                 <div class="scene-card" onclick="selectSceneType('gloomy')">Gloomy</div>
+            </div>
+            <div id="sceneProgressContainer" class="scene-progress-container">
+                <div id="sceneWaveform"></div>
             </div>
         </div>
     </div>

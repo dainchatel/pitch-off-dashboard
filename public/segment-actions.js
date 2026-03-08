@@ -20,16 +20,15 @@ async function loadStingsFromDirectory() {
         const stingFiles = [
             'lightning-round.wav',
             'crunch-numbers.wav',
-            'tagline-title.wav',
-            'meetings.wav'
+            'taglines.wav',
+            'celeb-corner.wav',
+            'action_sting.wav',
+            'studio-notes.wav',
+            'viral-marketing.wav'
         ];
         
-        // New stings that use placeholder.wav
-        const placeholderStings = [
-            'show-me-a-scene',
-            'studio-note',
-            'viral-marketing'
-        ];
+        // Stings that still use placeholder.wav (none currently)
+        const placeholderStings = [];
         
         // Load each audio file
         for (const filename of stingFiles) {
@@ -190,16 +189,16 @@ function renderManualStings() {
             .join(' ');
         
         // Special cases for display names
-        if (stingName === 'meetings') {
-            displayName = 'Casting';
-        } else if (stingName === 'tagline-title') {
-            displayName = 'Tagline or Title';
+        if (stingName === 'celeb-corner') {
+            displayName = 'Celeb Corner';
+        } else if (stingName === 'taglines') {
+            displayName = 'Taglines';
         } else if (stingName === 'crunch-numbers') {
             displayName = 'Crunch the Numbers';
-        } else if (stingName === 'show-me-a-scene') {
-            displayName = 'Show Me a Scene';
-        } else if (stingName === 'studio-note') {
-            displayName = 'Studio Note';
+        } else if (stingName === 'action_sting') {
+            displayName = 'Action!';
+        } else if (stingName === 'studio-notes') {
+            displayName = 'Studio Notes';
         } else if (stingName === 'viral-marketing') {
             displayName = 'Viral Marketing';
         }
@@ -259,18 +258,18 @@ function playManualSting(stingName) {
         stopManualSting(stingName);
     });
     
-    // If this is the "Casting" sting (meetings), also trigger random actors
-    if (stingName === 'meetings' && typeof loadTrendingActors === 'function') {
+    // If this is "Celeb Corner", also trigger random actors modal
+    if (stingName === 'celeb-corner' && typeof loadTrendingActors === 'function') {
         loadTrendingActors();
     }
     
     // If this is the "Studio Note" sting, also trigger random movie
-    if (stingName === 'studio-note' && typeof loadRandomMovie === 'function') {
+    if (stingName === 'studio-notes' && typeof loadRandomMovie === 'function') {
         loadRandomMovie();
     }
     
-    // If this is "Show Me a Scene", open the scene modal
-    if (stingName === 'show-me-a-scene') {
+    // If this is "Action!", open the scene modal
+    if (stingName === 'action_sting') {
         openSceneModal();
     }
     
@@ -328,6 +327,7 @@ function updateStingCards() {
 
 // Scene modal functions
 let currentSceneAudio = null;
+let currentSceneWavesurfer = null;
 let selectedSceneCard = null;
 let currentlyPlayingSceneType = null;
 
@@ -335,18 +335,17 @@ function openSceneModal() {
     const modal = document.getElementById('sceneModal');
     if (modal) {
         modal.style.display = 'flex';
-        // Reset any previously selected scene card
         if (selectedSceneCard) {
             selectedSceneCard.classList.remove('playing');
             selectedSceneCard = null;
         }
-        // Stop any currently playing scene audio
-        if (currentSceneAudio) {
-            currentSceneAudio.pause();
-            currentSceneAudio.currentTime = 0;
-            currentSceneAudio = null;
+        if (currentSceneWavesurfer) {
+            currentSceneWavesurfer.destroy();
+            currentSceneWavesurfer = null;
         }
+        currentSceneAudio = null;
         currentlyPlayingSceneType = null;
+        hideSceneWaveform();
     }
 }
 
@@ -354,18 +353,83 @@ function closeSceneModal() {
     const modal = document.getElementById('sceneModal');
     if (modal) {
         modal.style.display = 'none';
-        // Reset selected scene card
         if (selectedSceneCard) {
             selectedSceneCard.classList.remove('playing');
             selectedSceneCard = null;
         }
-        // Stop any playing audio
-        if (currentSceneAudio) {
-            currentSceneAudio.pause();
-            currentSceneAudio.currentTime = 0;
-            currentSceneAudio = null;
+        if (currentSceneWavesurfer) {
+            currentSceneWavesurfer.destroy();
+            currentSceneWavesurfer = null;
         }
+        currentSceneAudio = null;
         currentlyPlayingSceneType = null;
+        hideSceneWaveform();
+    }
+}
+
+function showSceneWaveform() {
+    const container = document.getElementById('sceneProgressContainer');
+    if (container) container.classList.add('visible');
+}
+
+function hideSceneWaveform() {
+    const container = document.getElementById('sceneProgressContainer');
+    if (container) container.classList.remove('visible');
+    if (currentSceneWavesurfer) {
+        try { currentSceneWavesurfer.destroy(); } catch (e) {}
+        currentSceneWavesurfer = null;
+    }
+    currentSceneAudio = null;
+}
+
+async function initSceneWaveform(audioUrl, sceneType, clickedCard) {
+    const container = document.getElementById('sceneWaveform');
+    if (!container) return;
+    container.innerHTML = '';
+    showSceneWaveform();
+    try {
+        const WaveSurfer = (await import('https://cdn.jsdelivr.net/npm/wavesurfer.js@7/dist/wavesurfer.esm.js')).default;
+        const ws = WaveSurfer.create({
+            container: '#sceneWaveform',
+            url: audioUrl,
+            height: 48,
+            waveColor: '#e8e8e8',
+            progressColor: '#667eea',
+            cursorColor: 'transparent',
+            barWidth: 2,
+            barGap: 1,
+            barRadius: 1,
+            normalize: true,
+        });
+        currentSceneWavesurfer = ws;
+        currentSceneAudio = null;
+        ws.on('ready', () => {
+            const el = ws.getMediaElement();
+            if (el) {
+                el.volume = 0.05;
+                currentSceneAudio = el;
+            }
+            ws.play();
+        });
+        ws.on('finish', () => {
+            currentSceneWavesurfer = null;
+            currentSceneAudio = null;
+            currentlyPlayingSceneType = null;
+            if (selectedSceneCard) {
+                selectedSceneCard.classList.remove('playing');
+                selectedSceneCard = null;
+            }
+            setTimeout(hideSceneWaveform, 200);
+        });
+        ws.on('interaction', () => { ws.playPause(); });
+    } catch (err) {
+        console.error('Scene waveform failed:', err);
+        currentlyPlayingSceneType = null;
+        if (selectedSceneCard) {
+            selectedSceneCard.classList.remove('playing');
+            selectedSceneCard = null;
+        }
+        hideSceneWaveform();
     }
 }
 
@@ -392,61 +456,34 @@ function selectSceneType(sceneType) {
     });
     
     // If clicking the same scene type that's playing, stop it
-    if (currentlyPlayingSceneType === sceneType && currentSceneAudio) {
-        currentSceneAudio.pause();
-        currentSceneAudio.currentTime = 0;
+    if (currentlyPlayingSceneType === sceneType && currentSceneWavesurfer) {
+        currentSceneWavesurfer.destroy();
+        currentSceneWavesurfer = null;
         currentSceneAudio = null;
         currentlyPlayingSceneType = null;
         if (selectedSceneCard) {
             selectedSceneCard.classList.remove('playing');
             selectedSceneCard = null;
         }
+        hideSceneWaveform();
         return;
     }
-    
-    // Remove previous selection
-    if (selectedSceneCard) {
-        selectedSceneCard.classList.remove('playing');
+
+    // Stop any currently playing waveform
+    if (currentSceneWavesurfer) {
+        currentSceneWavesurfer.destroy();
+        currentSceneWavesurfer = null;
+        currentSceneAudio = null;
+        hideSceneWaveform();
     }
-    
-    // Stop any currently playing audio
-    if (currentSceneAudio) {
-        currentSceneAudio.pause();
-        currentSceneAudio.currentTime = 0;
-    }
-    
-    // Highlight the selected card
+
     if (clickedCard) {
         clickedCard.classList.add('playing');
         selectedSceneCard = clickedCard;
     }
-    
-    // Play the appropriate audio file
-    const audio = new Audio(`./audio/stings/${sceneInfo.audio}`);
-    audio.volume = 0.05; // Set volume to 5%
-    currentSceneAudio = audio;
     currentlyPlayingSceneType = sceneType;
-    
-    // Set up ended event listener (no auto-close)
-    const onEnded = () => {
-        audio.removeEventListener('ended', onEnded);
-        currentSceneAudio = null;
-        currentlyPlayingSceneType = null;
-        if (selectedSceneCard) {
-            selectedSceneCard.classList.remove('playing');
-            selectedSceneCard = null;
-        }
-    };
-    audio.addEventListener('ended', onEnded);
-    
-    audio.play().catch(err => {
-        console.error('Error playing scene sound:', err);
-        currentSceneAudio = null;
-        currentlyPlayingSceneType = null;
-        if (selectedSceneCard) {
-            selectedSceneCard.classList.remove('playing');
-            selectedSceneCard = null;
-        }
-    });
+
+    const audioUrl = `./audio/stings/${sceneInfo.audio}`;
+    initSceneWaveform(audioUrl, sceneType, clickedCard);
 }
 

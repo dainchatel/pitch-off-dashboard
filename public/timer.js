@@ -1,16 +1,50 @@
-// Timer state
-let timerSeconds = 30 * 60; // 30 minutes in seconds
+// Timer state — driven by pitch length mode (30 / 25 / 15 min)
+let pitchLengthMode = 'standard'; // 'standard' (30), 'mid' (25), 'mini' (15)
 let timerInterval = null;
 let timerRunning = false;
-let timerMode = 'manual'; // 'manual' or 'automatic'
-let selectedSegments = { 20: null, 10: null }; // Segments for 20 and 10 minute marks
-let triggeredSegments = { 20: false, 10: false }; // Track which segments have been triggered
-let segmentRevealState = { 20: false, 10: false }; // Track reveal state for display
-let segmentSwapState = { 20: false, 10: false }; // Track swap mode per slot
-let swapTargetMinute = null; // Which slot is currently swapping (20 or 10)
+let timerMode = 'automatic'; // 'manual' or 'automatic' — auto selected on load
+
+function getPitchLengthConfig() {
+    if (pitchLengthMode === 'standard') {
+        return { totalSeconds: 30 * 60, segmentMarks: [20 * 60, 10 * 60] }; // 20:00, 10:00
+    }
+    if (pitchLengthMode === 'mid') {
+        return { totalSeconds: 25 * 60, segmentMarks: [10 * 60, 17 * 60 + 30] }; // 10:00, 17:30
+    }
+    return { totalSeconds: 15 * 60, segmentMarks: [5 * 60, 10 * 60] }; // 5:00, 10:00
+}
+
+function formatTriggerTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+function initSegmentStateFromConfig() {
+    const config = getPitchLengthConfig();
+    const [m1, m2] = config.segmentMarks;
+    selectedSegments = { [m1]: null, [m2]: null };
+    triggeredSegments = { [m1]: false, [m2]: false };
+    segmentRevealState = { [m1]: false, [m2]: false };
+    segmentSwapState = { [m1]: false, [m2]: false };
+    swapTargetMinute = null;
+}
+
+const config = getPitchLengthConfig();
+let timerSeconds = config.totalSeconds;
+let selectedSegments = { [config.segmentMarks[0]]: null, [config.segmentMarks[1]]: null };
+let triggeredSegments = { [config.segmentMarks[0]]: false, [config.segmentMarks[1]]: false };
+let segmentRevealState = { [config.segmentMarks[0]]: false, [config.segmentMarks[1]]: false };
+let segmentSwapState = { [config.segmentMarks[0]]: false, [config.segmentMarks[1]]: false };
+let swapTargetMinute = null;
 
 // Constants
 const SEGMENT_NOTIFICATION_DURATION = 5000; // milliseconds
+
+// Timer cue sounds (replace with different files when ready)
+const TIMER_SOUND_START = './audio/stings/placeholder.wav';
+const TIMER_SOUND_ONE_MINUTE = './audio/stings/placeholder.wav';
+const TIMER_SOUND_ZERO = './audio/stings/placeholder.wav';
 
 // Timer functions
 function formatTime(seconds) {
@@ -31,12 +65,27 @@ function updateTimerDisplay() {
     }
 }
 
+function updatePitchLengthButtonsDisabled() {
+    const container = document.querySelector('.pitch-length-btns');
+    if (container) {
+        container.querySelectorAll('.pitch-length-btn').forEach(btn => {
+            btn.disabled = timerRunning;
+        });
+    }
+}
+
 function startTimer() {
     if (timerRunning) return;
     
     timerRunning = true;
     document.getElementById('startButton').disabled = true;
     document.getElementById('pauseButton').disabled = false;
+    updatePitchLengthButtonsDisabled();
+    
+    // 1) Play sound on timer start (manual or auto)
+    if (typeof playOneSting === 'function') {
+        playOneSting(TIMER_SOUND_START)();
+    }
     
     timerInterval = setInterval(() => {
         if (timerSeconds > 0) {
@@ -48,10 +97,19 @@ function startTimer() {
                 checkAndTriggerSegments();
             }
             
-            // Play sound or alert when timer reaches 0
+            // 2) Play sound when one minute left
+            if (timerSeconds === 60 && typeof playOneSting === 'function') {
+                playOneSting(TIMER_SOUND_ONE_MINUTE)();
+            }
+            
+            // 3) Play sound and finish when timer reaches 0
             if (timerSeconds === 0) {
+                if (typeof playOneSting === 'function') {
+                    playOneSting(TIMER_SOUND_ZERO)();
+                }
                 pauseTimer();
-                alert('⏱️ Timer complete! 30 minutes have elapsed.');
+                const mins = getPitchLengthConfig().totalSeconds / 60;
+                alert(`⏱️ Timer complete! ${mins} minutes have elapsed.`);
             }
         }
     }, 1000);
@@ -63,27 +121,24 @@ function pauseTimer() {
     timerInterval = null;
     document.getElementById('startButton').disabled = false;
     document.getElementById('pauseButton').disabled = true;
+    updatePitchLengthButtonsDisabled();
 }
 
 function resetTimer() {
     pauseTimer();
-    timerSeconds = 30 * 60;
+    const config = getPitchLengthConfig();
+    timerSeconds = config.totalSeconds;
+    initSegmentStateFromConfig();
     updateTimerDisplay();
-    // Reset triggered segments
-    triggeredSegments = { 20: false, 10: false };
-    // Reset reveal/swap states
-    segmentRevealState = { 20: false, 10: false };
-    segmentSwapState = { 20: false, 10: false };
-    swapTargetMinute = null;
+    updatePitchLengthButtonsDisabled();
 }
 
-// Toggle between manual and automatic mode
+// Toggle between manual and automatic mode (unchecked = Auto, checked = Manual)
 function toggleTimerMode() {
     const modeToggle = document.getElementById('modeToggle');
-    timerMode = modeToggle.checked ? 'automatic' : 'manual';
+    timerMode = modeToggle.checked ? 'manual' : 'automatic';
     
     if (timerMode === 'automatic') {
-        // Select random segments for 20 and 10 minute marks
         selectRandomSegments();
         showSelectedSegments();
     } else {
@@ -97,49 +152,40 @@ function selectRandomSegments() {
         console.warn('No segments available for selection');
         return;
     }
-    
+    const [m1, m2] = getPitchLengthConfig().segmentMarks;
     // Randomly select 2 different segments using Fisher-Yates shuffle
     const shuffled = [...segments];
     for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    
-    selectedSegments[20] = shuffled[0];
-    selectedSegments[10] = shuffled[1] || shuffled[0]; // Fallback to first if only one segment
-    
-    // Reset reveal state when new selections are made
-    segmentRevealState = { 20: false, 10: false };
-    segmentSwapState = { 20: false, 10: false };
+    selectedSegments[m1] = shuffled[0];
+    selectedSegments[m2] = shuffled[1] || shuffled[0];
+    segmentRevealState = { [m1]: false, [m2]: false };
+    segmentSwapState = { [m1]: false, [m2]: false };
     swapTargetMinute = null;
 }
 
-// Check and trigger segments at specific countdown times
+// Check and trigger segments at specific countdown times (segmentMarks are seconds remaining)
 function checkAndTriggerSegments() {
-    const minutes = Math.floor(timerSeconds / 60);
-    const seconds = timerSeconds % 60;
-    
-    // Trigger at exactly 20:00
-    if (minutes === 20 && seconds === 0 && !triggeredSegments[20]) {
-        triggeredSegments[20] = true;
-        executeSegmentActions(selectedSegments[20], 20);
+    const [m1, m2] = getPitchLengthConfig().segmentMarks;
+    if (timerSeconds === m1 && !triggeredSegments[m1]) {
+        triggeredSegments[m1] = true;
+        executeSegmentActions(selectedSegments[m1], m1);
     }
-    
-    // Trigger at exactly 10:00
-    if (minutes === 10 && seconds === 0 && !triggeredSegments[10]) {
-        triggeredSegments[10] = true;
-        executeSegmentActions(selectedSegments[10], 10);
+    if (timerSeconds === m2 && !triggeredSegments[m2]) {
+        triggeredSegments[m2] = true;
+        executeSegmentActions(selectedSegments[m2], m2);
     }
 }
 
-// Execute the actions for a segment
-function executeSegmentActions(segment, minuteMark) {
+// Execute the actions for a segment (triggerMark is seconds remaining when triggered)
+function executeSegmentActions(segment, triggerMark) {
     if (!segment) return;
     
-    console.log(`Triggering segment "${segment.name}" at ${minuteMark} minute mark`);
+    console.log(`Triggering segment "${segment.name}" at ${formatTriggerTime(triggerMark)}`);
     
-    // Display segment notification
-    showSegmentNotification(segment.name, minuteMark);
+    showSegmentNotification(segment.name, triggerMark);
     
     // Execute each action in the segment
     if (segment.action && Array.isArray(segment.action)) {
@@ -152,10 +198,10 @@ function executeSegmentActions(segment, minuteMark) {
 }
 
 // Show notification when a segment is triggered
-function showSegmentNotification(segmentName, minuteMark) {
+function showSegmentNotification(segmentName, triggerMark) {
     const notification = document.createElement('div');
     notification.className = 'segment-notification';
-    notification.textContent = `🎬 ${segmentName} - ${minuteMark} minute mark`;
+    notification.textContent = `🎬 ${segmentName} - ${formatTriggerTime(triggerMark)}`;
     document.body.appendChild(notification);
     
     // Remove notification after defined duration
@@ -168,14 +214,16 @@ function showSegmentNotification(segmentName, minuteMark) {
 function showSelectedSegments() {
     const container = document.getElementById('selectedSegmentsDisplay');
     if (!container) return;
-    
+    const [m1, m2] = getPitchLengthConfig().segmentMarks;
+    const label1 = `📍 ${formatTriggerTime(m1)}`;
+    const label2 = `📍 ${formatTriggerTime(m2)}`;
     container.style.display = 'block';
     container.innerHTML = `
         <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
             <div style="text-align: center; font-weight: bold; margin-bottom: 8px;">🎲 Automatic Mode Segments:</div>
             <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
-                ${renderSegmentRow(20, '📍 20:00')}
-                ${renderSegmentRow(10, '📍 10:00')}
+                ${renderSegmentRow(m1, label1)}
+                ${renderSegmentRow(m2, label2)}
             </div>
         </div>
     `;
@@ -230,7 +278,8 @@ function hideSegment(minuteMark) {
 // Swap handler (no-op for now)
 function toggleSwapMode(minuteMark) {
     const currentlyOn = segmentSwapState[minuteMark];
-    segmentSwapState = { 20: false, 10: false };
+    const [m1, m2] = getPitchLengthConfig().segmentMarks;
+    segmentSwapState = { [m1]: false, [m2]: false };
     if (currentlyOn) {
         swapTargetMinute = null;
     } else {
@@ -246,8 +295,8 @@ function handleSwapSelect(segmentName) {
     const found = segments.find(seg => seg.name === segmentName);
     if (!found) return false;
     selectedSegments[swapTargetMinute] = found;
-    // Keep reveal state as-is (stays blurred until user reveals again)
-    segmentSwapState = { 20: false, 10: false };
+    const [m1, m2] = getPitchLengthConfig().segmentMarks;
+    segmentSwapState = { [m1]: false, [m2]: false };
     swapTargetMinute = null;
     showSelectedSegments();
     return true;
@@ -259,4 +308,38 @@ function hideSelectedSegments() {
     if (container) {
         container.style.display = 'none';
     }
+}
+
+// Set pitch length mode: 'standard' (30 min), 'mid' (25 min), or 'mini' (15 min)
+function setPitchLengthMode(mode) {
+    if (timerRunning) return;
+    pitchLengthMode = mode;
+    const container = document.querySelector('.pitch-length-btns');
+    if (container) {
+        container.querySelectorAll('.pitch-length-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+        });
+    }
+    const config = getPitchLengthConfig();
+    timerSeconds = config.totalSeconds;
+    initSegmentStateFromConfig();
+    updateTimerDisplay();
+    if (timerMode === 'automatic') {
+        selectRandomSegments();
+        showSelectedSegments();
+    }
+}
+
+// On load: show automatic segment slots when in automatic mode (default)
+function initTimerDisplay() {
+    updatePitchLengthButtonsDisabled();
+    if (timerMode === 'automatic') {
+        selectRandomSegments();
+        showSelectedSegments();
+    }
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTimerDisplay);
+} else {
+    initTimerDisplay();
 }
