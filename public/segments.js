@@ -8,23 +8,23 @@ const segments = [
         action: [playOneSting("./audio/stings/crunch-numbers.wav")]
     },
     {
-        name: "Tagline or Title",
-        action: [playOneSting("./audio/stings/tagline-title.wav")]
+        name: "Taglines",
+        action: [playOneSting("./audio/stings/taglines.wav")]
     },
     {
-        name: "Casting",
-        action: [playOneSting("./audio/stings/meetings.wav"), generateRandomActors(5)],
+        name: "Celeb Corner",
+        action: [playOneSting("./audio/stings/celeb-corner.wav"), generateRandomActors(5)],
     },
     {
-        name: "Show Me a Scene",
-        action: [function() { playManualSting('show-me-a-scene'); }]
+        name: "Action!",
+        action: [function() { playManualSting('action_sting'); }]
     },
     {
-        name: "Studio Note",
-        action: [playOneSting("./audio/stings/placeholder.wav"), generateRandomMovie()],
+        name: "Studio Notes",
+        action: [playOneSting("./audio/stings/studio-notes.wav"), generateRandomMovie()],
     },
     {
         name: "Viral Marketing",
-        action: [function() { playManualSting('viral-marketing'); }]
+        action: [playOneSting("./audio/stings/viral-marketing.wav")]
     }
 ]
