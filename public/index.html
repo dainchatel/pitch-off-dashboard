@@ -124,6 +124,54 @@
             animation: pulse 1s infinite;
         }
 
+        .timer-seek-wrap {
+            margin: 4px 0 24px;
+            padding: 0 10px;
+        }
+
+        .timer-seek-slider {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #e8e8e8;
+            border-radius: 4px;
+            outline: none;
+            display: block;
+            transform: scaleX(-1);
+        }
+
+        .timer-seek-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            margin-top: -6px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .timer-seek-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            margin-top: -6px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .timer-seek-slider::-webkit-slider-runnable-track {
+            height: 8px;
+            border-radius: 4px;
+            background: #e8e8e8;
+        }
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
@@ -794,6 +842,9 @@
 
         <div class="timer-section">
             <div class="timer-display" id="timerDisplay">30:00</div>
+            <div class="timer-seek-wrap">
+                <input type="range" id="timerSeekSlider" class="timer-seek-slider" min="0" max="1800" value="1800" title="Drag to jump to any time">
+            </div>
             <div class="timer-controls">
                 <button class="timer-button start" id="startButton" onclick="startTimer()">▶️ Start</button>
                 <button class="timer-button pause" id="pauseButton" onclick="pauseTimer()" disabled>⏸️ Pause</button>
