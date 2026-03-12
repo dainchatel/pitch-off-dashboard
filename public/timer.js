@@ -9,7 +9,10 @@ function getPitchLengthConfig() {
         return { totalSeconds: 30 * 60, segmentMarks: [20 * 60, 10 * 60] }; // 20:00, 10:00
     }
     if (pitchLengthMode === 'mid') {
-        return { totalSeconds: 25 * 60, segmentMarks: [10 * 60, 17 * 60 + 30] }; // 10:00, 17:30
+        // 25 min split evenly: segments at 1/3 and 2/3 → 16:40 and 8:20 remaining
+        const total = 25 * 60;
+        const third = Math.round(total / 3);
+        return { totalSeconds: total, segmentMarks: [2 * third, third] };
     }
     return { totalSeconds: 15 * 60, segmentMarks: [5 * 60, 10 * 60] }; // 5:00, 10:00
 }
@@ -38,13 +41,16 @@ let segmentRevealState = { [config.segmentMarks[0]]: false, [config.segmentMarks
 let segmentSwapState = { [config.segmentMarks[0]]: false, [config.segmentMarks[1]]: false };
 let swapTargetMinute = null;
 
+// Seek slider: don't overwrite value while user is dragging
+let seekSliderDragging = false;
+
 // Constants
 const SEGMENT_NOTIFICATION_DURATION = 5000; // milliseconds
 
-// Timer cue sounds (replace with different files when ready)
-const TIMER_SOUND_START = './audio/stings/placeholder.wav';
-const TIMER_SOUND_ONE_MINUTE = './audio/stings/placeholder.wav';
-const TIMER_SOUND_ZERO = './audio/stings/placeholder.wav';
+// Timer cue sounds
+const TIMER_SOUND_START = './audio/stings/pitch-start.wav';
+const TIMER_SOUND_ONE_MINUTE = './audio/stings/one-minute-left.wav';
+const TIMER_SOUND_ZERO = './audio/stings/pitch-end.wav';
 
 // Timer functions
 function formatTime(seconds) {
@@ -63,6 +69,15 @@ function updateTimerDisplay() {
     } else {
         display.classList.remove('warning');
     }
+    if (!seekSliderDragging) updateTimerSeekSlider();
+}
+
+function updateTimerSeekSlider() {
+    const slider = document.getElementById('timerSeekSlider');
+    if (!slider) return;
+    const total = getPitchLengthConfig().totalSeconds;
+    slider.max = total;
+    slider.value = Math.max(0, Math.min(total, timerSeconds));
 }
 
 function updatePitchLengthButtonsDisabled() {
@@ -102,14 +117,12 @@ function startTimer() {
                 playOneSting(TIMER_SOUND_ONE_MINUTE)();
             }
             
-            // 3) Play sound and finish when timer reaches 0
+            // 3) Play sound and stop when timer reaches 0 (no alert — sound plays immediately)
             if (timerSeconds === 0) {
                 if (typeof playOneSting === 'function') {
                     playOneSting(TIMER_SOUND_ZERO)();
                 }
                 pauseTimer();
-                const mins = getPitchLengthConfig().totalSeconds / 60;
-                alert(`⏱️ Timer complete! ${mins} minutes have elapsed.`);
             }
         }
     }, 1000);
@@ -129,7 +142,12 @@ function resetTimer() {
     const config = getPitchLengthConfig();
     timerSeconds = config.totalSeconds;
     initSegmentStateFromConfig();
+    if (timerMode === 'automatic') {
+        selectRandomSegments();
+        showSelectedSegments();
+    }
     updateTimerDisplay();
+    updateTimerSeekSlider();
     updatePitchLengthButtonsDisabled();
 }
 
@@ -324,18 +342,49 @@ function setPitchLengthMode(mode) {
     timerSeconds = config.totalSeconds;
     initSegmentStateFromConfig();
     updateTimerDisplay();
+    updateTimerSeekSlider();
     if (timerMode === 'automatic') {
         selectRandomSegments();
         showSelectedSegments();
     }
 }
 
+function applyTimerSeek() {
+    const slider = document.getElementById('timerSeekSlider');
+    if (!slider) return;
+    seekSliderDragging = false;
+    const sec = parseInt(slider.value, 10);
+    if (isNaN(sec)) return;
+    const total = getPitchLengthConfig().totalSeconds;
+    timerSeconds = Math.max(0, Math.min(total, sec));
+    updateTimerDisplay();
+    updateTimerSeekSlider();
+    if (timerSeconds === 0 && timerRunning) {
+        if (typeof playOneSting === 'function') playOneSting(TIMER_SOUND_ZERO)();
+        pauseTimer();
+    }
+}
+
 // On load: show automatic segment slots when in automatic mode (default)
 function initTimerDisplay() {
     updatePitchLengthButtonsDisabled();
+    updateTimerSeekSlider();
     if (timerMode === 'automatic') {
         selectRandomSegments();
         showSelectedSegments();
+    }
+    const slider = document.getElementById('timerSeekSlider');
+    if (slider) {
+        slider.addEventListener('mousedown', () => { seekSliderDragging = true; });
+        slider.addEventListener('mouseup', applyTimerSeek);
+        slider.addEventListener('change', applyTimerSeek);
+        slider.addEventListener('input', () => {
+            const sec = parseInt(slider.value, 10);
+            if (!isNaN(sec)) {
+                timerSeconds = Math.max(0, Math.min(getPitchLengthConfig().totalSeconds, sec));
+                updateTimerDisplay();
+            }
+        });
     }
 }
 if (document.readyState === 'loading') {
