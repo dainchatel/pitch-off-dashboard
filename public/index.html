@@ -101,6 +101,67 @@
             opacity: 0.9;
         }
 
+        .volume-control {
+            width: 200px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+        }
+
+        .volume-icon {
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .volume-slider {
+            flex: 1;
+            min-width: 0;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            margin-top: -5px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .volume-slider::-webkit-slider-runnable-track {
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .volume-value {
+            font-size: 0.9em;
+            font-weight: bold;
+            min-width: 36px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
         .timer-section {
             background: white;
             border-radius: 15px;
@@ -827,7 +888,11 @@
 <body>
     <div class="container">
         <header>
-            <div class="header-spacer" aria-hidden="true"></div>
+            <div class="volume-control" title="Playback volume">
+                <span class="volume-icon" aria-hidden="true">🔊</span>
+                <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="50" aria-label="Playback volume">
+                <span class="volume-value" id="volumeValue">50%</span>
+            </div>
             <div class="header-title">
                 <h1>🎙️ Pitch-Off Podcast Dashboard</h1>
             </div>
@@ -922,6 +987,7 @@
     </div>
 
     <!-- Load JavaScript modules -->
+    <script src="volume.js"></script>
     <script src="segment-actions.js"></script>
     <script src="segments.js"></script>
     <script src="timer.js"></script>

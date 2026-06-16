@@ -37,7 +37,7 @@ async function loadStingsFromDirectory() {
                 // Create audio element and preload
                 const audio = new Audio(path);
                 audio.preload = 'auto';
-                audio.volume = 0.05; // Set volume to 5%
+                registerAudio(audio); // volume tracks the global slider
                 
                 // Store by filename (without extension)
                 const name = getFilenameWithoutExtension(filename);
@@ -56,7 +56,7 @@ async function loadStingsFromDirectory() {
                 // Create a new Audio instance for each sting (can't share the same instance)
                 const audio = new Audio(placeholderPath);
                 audio.preload = 'auto';
-                audio.volume = 0.05; // Set volume to 5%
+                registerAudio(audio); // volume tracks the global slider
                 stingAudioFiles[stingName] = audio;
                 console.log(`Loaded sting: ${stingName} (using placeholder)`);
             } catch (err) {
@@ -85,7 +85,7 @@ function playOneSting(stingPath) {
         if (stingAudioFiles[filename]) {
             const audio = stingAudioFiles[filename];
             audio.currentTime = 0;
-            audio.volume = 0.05; // Set volume to 5%
+            audio.volume = getAudioVolume();
             audio.play().catch(err => {
                 console.error('Error playing sting:', err);
             });
@@ -93,7 +93,7 @@ function playOneSting(stingPath) {
             // Fallback: try to create and play audio element
             try {
                 const audio = new Audio(stingPath);
-                audio.volume = 0.05; // Set volume to 5%
+                registerAudio(audio);
                 audio.play().catch(err => {
                     console.error('Error playing sting:', err);
                 });
@@ -244,7 +244,7 @@ function playManualSting(stingName) {
     
     const audio = stingAudioFiles[stingName];
     audio.currentTime = 0;
-    audio.volume = 0.05; // Set volume to 5%
+    audio.volume = getAudioVolume();
     
     // Set up ended event listener
     const onEnded = () => {
@@ -331,6 +331,16 @@ let currentSceneWavesurfer = null;
 let selectedSceneCard = null;
 let currentlyPlayingSceneType = null;
 
+// Release the current scene media element from volume tracking, then clear it.
+// Scene music recreates its media element on every play, so the old one must be
+// unregistered or it would linger in the volume registry and never be collected.
+function clearSceneAudio() {
+    if (currentSceneAudio) {
+        unregisterAudio(currentSceneAudio);
+        currentSceneAudio = null;
+    }
+}
+
 function openSceneModal() {
     const modal = document.getElementById('sceneModal');
     if (modal) {
@@ -343,7 +353,7 @@ function openSceneModal() {
             currentSceneWavesurfer.destroy();
             currentSceneWavesurfer = null;
         }
-        currentSceneAudio = null;
+        clearSceneAudio();
         currentlyPlayingSceneType = null;
         hideSceneWaveform();
     }
@@ -361,7 +371,7 @@ function closeSceneModal() {
             currentSceneWavesurfer.destroy();
             currentSceneWavesurfer = null;
         }
-        currentSceneAudio = null;
+        clearSceneAudio();
         currentlyPlayingSceneType = null;
         hideSceneWaveform();
     }
@@ -379,7 +389,7 @@ function hideSceneWaveform() {
         try { currentSceneWavesurfer.destroy(); } catch (e) {}
         currentSceneWavesurfer = null;
     }
-    currentSceneAudio = null;
+    clearSceneAudio();
 }
 
 async function initSceneWaveform(audioUrl, sceneType, clickedCard) {
@@ -402,18 +412,18 @@ async function initSceneWaveform(audioUrl, sceneType, clickedCard) {
             normalize: true,
         });
         currentSceneWavesurfer = ws;
-        currentSceneAudio = null;
+        clearSceneAudio();
         ws.on('ready', () => {
             const el = ws.getMediaElement();
             if (el) {
-                el.volume = 0.05;
+                registerAudio(el);
                 currentSceneAudio = el;
             }
             ws.play();
         });
         ws.on('finish', () => {
             currentSceneWavesurfer = null;
-            currentSceneAudio = null;
+            clearSceneAudio();
             currentlyPlayingSceneType = null;
             if (selectedSceneCard) {
                 selectedSceneCard.classList.remove('playing');
@@ -459,7 +469,7 @@ function selectSceneType(sceneType) {
     if (currentlyPlayingSceneType === sceneType && currentSceneWavesurfer) {
         currentSceneWavesurfer.destroy();
         currentSceneWavesurfer = null;
-        currentSceneAudio = null;
+        clearSceneAudio();
         currentlyPlayingSceneType = null;
         if (selectedSceneCard) {
             selectedSceneCard.classList.remove('playing');
@@ -473,7 +483,7 @@ function selectSceneType(sceneType) {
     if (currentSceneWavesurfer) {
         currentSceneWavesurfer.destroy();
         currentSceneWavesurfer = null;
-        currentSceneAudio = null;
+        clearSceneAudio();
         hideSceneWaveform();
     }
 
