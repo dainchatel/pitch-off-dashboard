@@ -52,6 +52,7 @@ function createAudioCard(audio) {
     if (audio.file) {
         const audioElement = new Audio();
         audioElement.src = audio.file;
+        registerAudio(audioElement); // volume tracks the global slider
         audioElement.addEventListener('ended', () => onAudioEnded(audio.id));
         audioElements[audio.id] = audioElement;
     }
